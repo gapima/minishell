@@ -14,6 +14,17 @@
 # define MINISHELL_H
 
 # include "../libft/libft.h"
+
 # include <stdio.h>
+# include <stdbool.h>
+# include <unistd.h>
+# include <signal.h>
+# include <readline/readline.h>
+# include <readline/history.h>
+
+typedef struct s_shellzin
+{
+	t_list *env;
+} t_shellzin;
 
 #endif

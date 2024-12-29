@@ -1,7 +1,7 @@
 NAME = minishell
 
 CC = cc
-CFLAGS = -g3 -Wall -Wextra -Werror
+CFLAGS = -g3 -lreadline -Wall -Wextra -Werror
 RM = rm -f
 
 INC = ./include
@@ -11,21 +11,17 @@ LIBFT = ./libft
 HEADERS = -I $(INC)
 LIBS = ./libft/libft.a
 
-FILES = src/main.c
-OBJS = $(FILES:%.c=%.o)
+FILES = src/main.c src/utils.c src/lexer.c
 
 all: $(NAME)
 
-%.o: %.c
-	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
-
 $(NAME): $(OBJS)
 	@make -C $(LIBFT)
-	@$(CC) $(OBJS) $(CFLAGS) $(HEADERS) -o $(NAME)
+	@make -C $(LIBFT) bonus
+	@$(CC) $(FILES) -o $(NAME) $(CFLAGS) $(HEADERS) $(LIBS)
 	@echo "SUCCESS!!"
 
 clean:
-	@$(RM) $(OBJS)
 	@make clean -C libft
 	@echo "Objects cleaned!"
 
