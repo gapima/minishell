@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 15:10:52 by glima            ###   ########.fr       */
+/*   Updated: 2024/12/29 17:36:55 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 typedef struct s_shellzin
 {
-	t_list *env;
-} t_shellzin;
+	t_list	*env;
+}	t_shellzin;
 
 #endif
