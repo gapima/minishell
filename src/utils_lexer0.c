@@ -45,3 +45,9 @@ char	lexer_consume(t_lexer *lexer)
 		lexer->cursor = ft_min(lexer->cursor + 1, lexer->size);
 	return (curr);
 }
+
+void lexer_consume_until(t_lexer *lexer, char c) {
+	while (!lexer_iseof(lexer) && lexer_peek(lexer) != c) {
+		lexer_consume(lexer);
+	}
+}

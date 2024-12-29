@@ -14,7 +14,7 @@
 # define LEXER_H
 
 # define BLANKS " \t"
-# define SPECIAL " \t<>|"
+# define SPECIAL " \t<>|\'\""
 
 # include "minishell.h"
 
@@ -27,7 +27,8 @@ typedef enum	e_token_kind
 	TokenKind_RArrow,
 	TokenKind_DLArrow,
 	TokenKind_DRArrow,
-	TokenKind_Pipe,
+	TokenKind_Skip,
+	TokenKind_Pipe
 } e_token_kind;
 
 typedef struct s_token
@@ -52,5 +53,6 @@ void	lexer_print_state(t_lexer *lexer);
 bool	lexer_iseof(t_lexer *lexer);
 char	lexer_peek(t_lexer *lexer);
 char	lexer_consume(t_lexer *lexer);
+void lexer_consume_until(t_lexer *lexer, char c);
 
 #endif
