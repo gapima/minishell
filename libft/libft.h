@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   libft.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/12/29 18:01:25 by glima             #+#    #+#             */
+/*   Updated: 2024/12/29 18:01:47 by glima            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #ifndef LIBFT_H
 # define LIBFT_H
@@ -19,7 +30,7 @@ typedef struct s_list
 {
 	void			*content;
 	struct s_list	*next;
-} t_list;
+}	t_list;
 
 t_list	*ft_lstnew(void *content);
 t_list	*ft_lstlast(t_list *lst);
@@ -47,8 +58,6 @@ int		ft_tolower(int c);
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
 int		ft_memcmp(const void *s1, const void *s2, size_t n);
 int		ft_atoi(const char *nptr);
-
-
 
 char	*get_next_line(int fd);
 char	*ft_strjoin(char *s1, char *s2);
