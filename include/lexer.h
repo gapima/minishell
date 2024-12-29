@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 17:35:44 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 17:55:04 by glima            ###   ########.fr       */
+/*   Updated: 2024/12/29 18:31:08 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 # define BLANKS " \t"
 # define SPECIAL " \t<>|"
+
+# include "minishell.h"
 
 enum	e_token_kind
 {
@@ -47,4 +49,8 @@ t_lexer	lexer_init(char *str);
 t_token	lexer_next(t_lexer *lexer);
 char	*get_token_symbol(t_token token);
 void	lexer_print_state(t_lexer *lexer);
+bool	lexer_iseof(t_lexer *lexer);
+char	lexer_peek(t_lexer *lexer);
+char	lexer_consume(t_lexer *lexer);
+
 #endif
