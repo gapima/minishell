@@ -10,9 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
 #include "../include/lexer.h"
-#include "../include/utils.h"
 
 char	lexer_consume_specific(t_lexer *lexer, char c)
 {

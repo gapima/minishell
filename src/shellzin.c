@@ -23,6 +23,7 @@ void	shellzin_handle_sigint(int sig)
 
 void	shellzin_init(t_shellzin *shell, char *envp[])
 {
+	ft_bzero(shell, sizeof(t_shellzin));
 	while (*envp)
 		ft_lstadd_back(&shell->env, ft_lstnew(*envp++));
 }

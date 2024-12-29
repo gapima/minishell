@@ -18,7 +18,7 @@
 
 # include "minishell.h"
 
-enum	e_token_kind
+typedef enum	e_token_kind
 {
 	TokenKind_Eof,
 	TokenKind_Word,
@@ -28,7 +28,7 @@ enum	e_token_kind
 	TokenKind_DLArrow,
 	TokenKind_DRArrow,
 	TokenKind_Pipe,
-};
+} e_token_kind;
 
 typedef struct s_token
 {

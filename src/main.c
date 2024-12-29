@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../include/lexer.h"
+#include "../include/minishell.h"
 
 void	shellzin_repl(t_shellzin *shell)
 {
@@ -40,7 +41,6 @@ int	main(int ac, char *av[], char *envp[])
 
 	(void)ac;
 	(void)av;
-	shell = {0};
 	shellzin_init(&shell, envp);
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
