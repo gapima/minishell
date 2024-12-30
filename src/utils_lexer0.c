@@ -51,3 +51,12 @@ void lexer_consume_until(t_lexer *lexer, char c) {
 		lexer_consume(lexer);
 	}
 }
+
+void	token_print_state(t_token token)
+{
+		printf("(%s)", get_token_symbol(token));
+		if (token.kind == TokenKind_Word || token.kind == TokenKind_StringLiteral)
+			printf(": %s", token.content);
+		printf("\n");
+}
+

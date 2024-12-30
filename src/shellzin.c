@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
+# include "../include/utils.h"
 
 void	shellzin_handle_sigint(int sig)
 {
@@ -46,14 +47,14 @@ char	*shellzin_env_search(t_shellzin *shell, const char *key)
 
 void	shellzin_deinit(t_shellzin *shell)
 {
-	t_list	*head;
-	t_list	*next;
+	ft_lst_destroy(shell->env);
+}
 
-	head = shell->env;
-	while (head)
-	{
-		next = head->next;
-		free(head);
-		head = next;
+void shellzin_assert(bool cond, char *msg)
+{
+	if (!cond) {
+		ft_putendl_fd(msg, 2);
+		exit(1);
 	}
 }
+

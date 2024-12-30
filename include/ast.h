@@ -22,9 +22,9 @@ typedef struct e_ast_word
 
 typedef struct e_ast_redirect
 {
-	t_ast *children;
-	t_list *lhs;
-	t_list *rhs;
+	t_ast *lhs;
+	t_ast *rhs;
+	e_token_kind kind;
 } t_ast_redirect;
 
 typedef struct e_ast_simple_command
@@ -34,7 +34,9 @@ typedef struct e_ast_simple_command
 
 typedef struct e_ast_pipe
 {
-	t_list *body;
+	t_ast *lhs;
+	t_ast *rhs;
+	t_ast *children;
 } t_ast_pipe;
 
 struct e_ast 
@@ -47,5 +49,6 @@ struct e_ast
 		t_ast_pipe pipe;
 	};
 };
+t_ast *ast_init(e_ast_kind kind);
 
 #endif

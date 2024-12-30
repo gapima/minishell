@@ -31,5 +31,6 @@ void	shellzin_handle_sigint(int sig);
 void	shellzin_init(t_shellzin *shell, char *envp[]);
 char	*shellzin_env_search(t_shellzin *shell, const char *key);
 void	shellzin_deinit(t_shellzin *shell);
+void shellzin_assert(bool cond, char *msg);
 
 #endif

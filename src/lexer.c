@@ -48,6 +48,8 @@ char	*get_token_symbol(t_token token)
 		return (">");
 	else if (token.kind == TokenKind_DRArrow)
 		return (">>");
+	else if (token.kind == TokenKind_Skip)
+		return ("<SKIP>");
 	else if (token.kind == TokenKind_DLArrow)
 		return ("<<");
 	return (NULL);
@@ -60,16 +62,7 @@ void	lexer_print_state(t_lexer *lexer)
 	token = lexer_next(lexer);
 	while (token.kind != TokenKind_Eof)
 	{
-		if (token.kind == TokenKind_Skip) {
-			token = lexer_next(lexer);
-			continue;
-		}
-		printf("(%s)", get_token_symbol(token));
-
-		if (token.kind == TokenKind_Word ||
-			token.kind == TokenKind_StringLiteral)
-			printf(": %s", token.content);
-		printf("\n");
+		token_print_state(token);
 		token = lexer_next(lexer);
 	}
 }

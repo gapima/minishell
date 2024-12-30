@@ -10,13 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/lexer.h"
 #include "../include/minishell.h"
+#include "../include/parser.h"
 
 void	shellzin_repl(t_shellzin *shell)
 {
 	char	*line;
-	t_lexer	lexer;
 
 	signal(SIGINT, shellzin_handle_sigint);
 	signal(SIGQUIT, SIG_IGN);
@@ -29,8 +28,7 @@ void	shellzin_repl(t_shellzin *shell)
 			ft_putendl_fd("exit", 1);
 			break ;
 		}
-		lexer = lexer_init(line);
-		lexer_print_state(&lexer);
+		parse(line);
 		free(line);
 	}
 }

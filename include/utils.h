@@ -12,6 +12,9 @@
 
 #ifndef UTILS_H
 # define UTILS_H
+#include "../include/minishell.h"
 
 int	ft_min(int a, int b);
+void ft_lst_destroy(t_list *list);
+void *ft_realloc(void *m, size_t prev_size, size_t new_size);
 #endif

@@ -54,5 +54,6 @@ bool	lexer_iseof(t_lexer *lexer);
 char	lexer_peek(t_lexer *lexer);
 char	lexer_consume(t_lexer *lexer);
 void lexer_consume_until(t_lexer *lexer, char c);
+void	token_print_state(t_token token);
 
 #endif
