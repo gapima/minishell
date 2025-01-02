@@ -11,7 +11,16 @@
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
-#include "../include/parser.h"
+
+void	shellzin_evaluate(char *line, t_shellzin *shell)
+{
+	t_ast *ast;
+
+	ast = parse(line, shell);
+	ast_print_state(ast, 0);
+	parser_deinit(&shell->parser);
+	ast_deinit(ast);
+}
 
 void	shellzin_repl(t_shellzin *shell)
 {
@@ -28,7 +37,7 @@ void	shellzin_repl(t_shellzin *shell)
 			ft_putendl_fd("exit", 1);
 			break ;
 		}
-		parse(line);
+		shellzin_evaluate(line, shell);
 		free(line);
 	}
 }

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/lexer.h"
+#include "../include/minishell.h"
 
 char	lexer_consume_specific(t_lexer *lexer, char c)
 {
@@ -99,7 +99,7 @@ t_token	lexer_next(t_lexer *lexer)
 		lexer_consume_specific(lexer, '>');
 		token.kind = TokenKind_RArrow;
 		if (lexer_consume_specific(lexer, '>'))
-			token.kind = TokenKind_DLArrow;
+			token.kind = TokenKind_DRArrow;
 		token.end = lexer->cursor;
 	}
 	else if (c == '\'' || c == '"')
@@ -112,12 +112,11 @@ t_token	lexer_next(t_lexer *lexer)
 			//ERROR unclosed quotes
 			exit(1);
 		}
-
 		token.end = lexer->cursor;
 		if (token.end - token.start <= 2) {
 			token.kind = TokenKind_Skip;
+			return (token);
 		}
-
 		token.content = ft_substr(lexer->content, \
 		token.start, token.end - token.start);
 	}

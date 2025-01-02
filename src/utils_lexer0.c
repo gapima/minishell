@@ -10,9 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
-#include "../include/lexer.h"
-#include "../include/utils.h"
+# include "../include/minishell.h"
 
 bool	lexer_iseof(t_lexer *lexer)
 {

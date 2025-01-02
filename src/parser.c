@@ -1,5 +1,4 @@
-#include "../include/parser.h"
-#include "../include/ast.h"
+#include "../include/minishell.h"
 
 //TODO(rnoba): remove
 #include <assert.h>
@@ -55,33 +54,18 @@ t_token parser_peek(t_parser *parser)
 	return parser->tokens[parser->cursor];
 }
 
-void parser_next(t_parser *parser)
+t_token parser_consume(t_parser *parser)
 {
+	t_token token;
+
+	token = parser_peek(parser);
 	if (!parser_iseof(parser)) {
 		parser->cursor = ft_min(parser->cursor + 1, parser->size);
 	}
+	return (token);
 }
 
-t_ast *parse_word(t_parser *parser)
-{
-	t_ast		*ast;
-	t_token	token;
-
-	if (parser_iseof(parser)) {
-		return NULL;
-	}
-	token = parser_peek(parser);
-	if (token.kind != TokenKind_Word &&
-		token.kind != TokenKind_StringLiteral) {
-			return NULL;
-	}
-	parser_next(parser);
-	ast = ast_init(AstKind_Word);
-	ast->word.word = token.content;
-	return (ast);
-}
-
-bool is_redirection(e_token_kind kind)
+bool is_redirection_symbol(e_token_kind kind)
 {
 	return (kind == TokenKind_LArrow ||
 				kind == TokenKind_RArrow ||
@@ -89,130 +73,133 @@ bool is_redirection(e_token_kind kind)
 				kind == TokenKind_DLArrow);
 }
 
-t_ast *parse_redirect(t_parser *parser)
+t_ast *parse_word(t_parser *parser)
 {
-	t_ast		*ast;
-	t_token	token;
-	t_ast		*lhs;
-	t_ast		*rhs;
+	t_ast	*word_node;
+	e_token_kind	kind;
 
-	if (parser_iseof(parser)) {
+	kind = parser_peek(parser).kind;
+	if (kind != TokenKind_Word &&
+			kind != TokenKind_StringLiteral)
 		return (NULL);
-	}
-	lhs = parse_word(parser);
-	token = parser_peek(parser);
-	if (!is_redirection(token.kind)) {
-			return (lhs);
-	}
-	parser_next(parser);
-	rhs = parse_word(parser);
-	ast = ast_init(AstKind_Redirect);
-	ast->redirect.kind = token.kind; 
-	ast->redirect.lhs = lhs; 
-	ast->redirect.rhs = rhs; 
-	return (ast);
+
+	word_node = ast_init(AstKind_Word);
+	//TODO(rnoba) expand $
+	word_node->u_node.word_node.content = parser_consume(parser).content;
+	return (word_node);
 }
 
-t_ast *parse_command(t_parser *parser)
+t_ast *parse_word_list(t_parser *parser)
 {
-	t_ast		*ast;
-	t_ast		*red;
+	t_ast	*list_node;
+	t_ast	*word_node;
 
-	if (parser_iseof(parser)) {
+	word_node = parse_word(parser);
+	if (!word_node)
 		return (NULL);
+	list_node = ast_init(AstKind_List);
+	while (word_node) {
+		ft_lstadd_back(&list_node->u_node.list_node.list, ft_lstnew(word_node));
+		word_node = parse_word(parser);
 	}
-	red = parse_redirect(parser);
-	if (red == NULL) {
-		return NULL;
+	return (list_node);
+}
+
+t_ast *parse_redirect(t_parser *parser)
+{
+	t_ast	*redirect_node;
+	t_ast	*node;
+	t_ast	*right;
+	e_token_kind	kind;
+
+	node = parse_word_list(parser);
+	if (node == NULL)
+		return (NULL);
+
+	while (1) {
+		kind = parser_peek(parser).kind;
+		if (!is_redirection_symbol(kind))
+			break;
+		parser_consume(parser);
+		right = parse_word(parser);
+		if (right == NULL)
+			break;
+		redirect_node = ast_init(AstKind_Redirect);
+		redirect_node->u_node.redirect_node.kind = kind;
+		redirect_node->u_node.redirect_node.left = node;
+		redirect_node->u_node.redirect_node.right = right;
+		node = redirect_node;
 	}
-	ast = ast_init(AstKind_SimpleCommand);
-	while (red) {
-		ft_lstadd_front(&ast->simple_command.body, ft_lstnew(red));
-		red = parse_redirect(parser);
-	}
-	return (ast);
+	return (node);
 }
 
 t_ast *parse_pipe(t_parser *parser)
 {
-	t_ast		*ast;
-	t_ast		*lhs;
-	t_ast		*rhs;
-	t_token	token;
+	t_ast	*pipe_node;
+	t_ast	*node;
+	t_ast	*right;
 
-	if (parser_iseof(parser)) {
+	node = parse_redirect(parser);
+	if (node == NULL)
 		return (NULL);
+	while (1) {
+		if (parser_peek(parser).kind != TokenKind_Pipe)
+			break;
+		parser_consume(parser);
+		right = parse_redirect(parser);
+		if (right == NULL)
+			break;
+		pipe_node = ast_init(AstKind_Pipe);
+		pipe_node->u_node.pipe_node.left = node;
+		pipe_node->u_node.pipe_node.right = right;
+		node = pipe_node;
 	}
-	lhs = parse_command(parser);
-	token = parser_peek(parser);
-	if (token.kind != TokenKind_Pipe) {
-		return lhs; 
-	}
-	parser_next(parser);
-	rhs = parse_command(parser);
-
-	ast = ast_init(AstKind_Pipe);
-	ast->pipe.lhs = lhs;
-	ast->pipe.rhs = rhs;
-	ast->pipe.children = NULL;
-
-	//TODO(rnoba): make this recursive
-	if (token.kind == TokenKind_Pipe) {
-		ast->pipe.children = parse_pipe(parser);
-	}
-	return (ast);
+	return (node);
 }
 
-void ast_print_state(t_ast *ast) {
-	if (!ast) {
-		return ; 
+void print_indent(int lv)
+{
+	while (lv--) {
+		ft_putchar(' ');
+		ft_putchar(' ');
 	}
+}
 
+void ast_print_state(t_ast *ast, int lv) {
+	if (!ast)
+		return ;
+
+	print_indent(lv);
 	if (ast->kind == AstKind_Word) {
-		t_ast_word word = ast->word;
-		printf("%s\n", word.word);
+		ft_putendl_fd(ast->u_node.word_node.content, 1);
 	}
 	else if (ast->kind == AstKind_Redirect)
 	{
-		printf("<Redirection>\n");
-		t_ast_redirect redir = ast->redirect;
-		ast_print_state(redir.lhs);
-		ast_print_state(redir.rhs);
+		ft_putendl_fd("(REDIRECT)", 1);
+		ast_print_state(ast->u_node.redirect_node.left, lv + 1);
+		ast_print_state(ast->u_node.redirect_node.right, lv + 1);
 	}
-	else if (ast->kind == AstKind_SimpleCommand)
+	else if (ast->kind == AstKind_List)
 	{
-		printf("<SimpleCommand>\n");
-		t_ast_simple_command scmd = ast->simple_command;
-		t_list *l = scmd.body;
-		while (l) {
-			t_ast *red = l->content;
-			ast_print_state(red);
-			l = l->next;
+		/*ft_putendl_fd("<LIST>", 1);*/
+		t_list *head = ast->u_node.list_node.list;
+		while (head) {
+			ast_print_state((t_ast *)head->content, lv);
+			head = head->next;
 		}
 	}
 	else if (ast->kind == AstKind_Pipe)
 	{
-		printf("<|>\n");
-		t_ast_pipe pipe = ast->pipe;
-		ast_print_state(pipe.lhs);
-		ast_print_state(pipe.rhs);
-		/*t_list *l = pipe.body;*/
-		/*while (l) {*/
-		/*	t_ast *cmd = l->content;*/
-		/*	ast_print_state(cmd);*/
-		/*	l = l->next;*/
-		/*}*/
+		ft_putendl_fd("<PIPE>", 1);
+		ast_print_state(ast->u_node.pipe_node.left, lv + 1);
+		ast_print_state(ast->u_node.pipe_node.right, lv + 1);
 	}
 }
 
-void parse(char *line) {
-	t_lexer lexer;
-	t_parser parser;
+t_ast *parse(char *line, t_shellzin *shell) {
+	shell->lexer = lexer_init(line);
+	shell->parser = parser_init(&shell->lexer);
 
-	lexer = lexer_init(line);
-	parser = parser_init(&lexer);
-	parser_batch_tokens(&parser);
-
-	t_ast *ast = parse_pipe(&parser);
-	ast_print_state(ast);
+	parser_batch_tokens(&shell->parser);
+	return (parse_pipe(&shell->parser));
 }

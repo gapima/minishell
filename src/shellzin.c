@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
-# include "../include/utils.h"
+# include "../include/minishell.h"
 
 void	shellzin_handle_sigint(int sig)
 {
