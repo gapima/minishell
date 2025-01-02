@@ -28,7 +28,6 @@ void	shellzin_repl(t_shellzin *shell)
 
 	signal(SIGINT, shellzin_handle_sigint);
 	signal(SIGQUIT, SIG_IGN);
-	(void)shell;
 	while (1)
 	{
 		line = readline("> ");
@@ -38,6 +37,8 @@ void	shellzin_repl(t_shellzin *shell)
 			break ;
 		}
 		shellzin_evaluate(line, shell);
+		if (*line)
+			add_history(line);
 		free(line);
 	}
 }

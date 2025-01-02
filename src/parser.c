@@ -181,7 +181,6 @@ void ast_print_state(t_ast *ast, int lv) {
 	}
 	else if (ast->kind == AstKind_List)
 	{
-		/*ft_putendl_fd("<LIST>", 1);*/
 		t_list *head = ast->u_node.list_node.list;
 		while (head) {
 			ast_print_state((t_ast *)head->content, lv);

@@ -40,10 +40,10 @@ typedef enum	e_token_kind
 
 typedef struct s_token
 {
-	e_token_kind	kind;
-	char			*content;
-	size_t			start;
-	size_t			end;
+	e_token_kind kind;
+	char *content;
+	size_t start;
+	size_t end;
 }	t_token;
 
 typedef struct s_lexer
