@@ -21,6 +21,8 @@
 # include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include <sys/wait.h>
+# include <errno.h>
 
 # define BLANKS " \t"
 # define SPECIAL " \t<>|\'\""
@@ -69,11 +71,14 @@ typedef struct s_parser
 	t_token *tokens;
 	size_t size;
 	size_t cursor;
+	bool has_error;
+	char *error_msg;
 } t_parser;
 
 t_parser	parser_init(t_lexer *lexer);
 void			parser_deinit(t_parser *parser);
 void			parser_batch_tokens(t_parser *parser);
+bool			parser_iseof(t_parser *parser);
 
 typedef enum e_ast_kind
 {
@@ -120,16 +125,19 @@ struct e_ast
 		t_ast_pipe pipe_node;
 	} u_node;
 };
-void	ast_print_state(t_ast *ast, int lv);
-void	ast_deinit(t_ast *ast);
-t_ast *ast_init(e_ast_kind kind);
 
 typedef struct s_shellzin
 {
+	int last_status;
 	t_list	*env;
 	t_lexer lexer;
 	t_parser parser;
 }	t_shellzin;
+
+void	ast_print_state(t_ast *ast, int lv);
+void	ast_deinit(t_ast *ast);
+t_ast *ast_init(e_ast_kind kind);
+void ast_evaluate(t_shellzin *shell, t_ast *ast);
 
 t_ast *parse(char *line, t_shellzin *shell);
 
@@ -142,5 +150,10 @@ char	*shellzin_env_search(t_shellzin *shell, const char *key);
 int		ft_min(int a, int b);
 void	ft_lst_destroy(t_list *list);
 void *ft_realloc(void *m, size_t prev_size, size_t new_size);
+
+void	string_list_destroy(char **list);
+char	**join_string_list(t_list *list);
+char	**join_word_list(t_list *list);
+char	*search_path(t_shellzin *shell, char *str);
 
 #endif

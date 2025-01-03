@@ -17,7 +17,12 @@ void	shellzin_evaluate(char *line, t_shellzin *shell)
 	t_ast *ast;
 
 	ast = parse(line, shell);
-	ast_print_state(ast, 0);
+	if (!parser_iseof(&shell->parser))
+		ft_putendl_fd("syntax error", 1);
+	else if (shell->parser.has_error)
+		ft_putendl_fd(shell->parser.error_msg, 1);
+	else
+		ast_evaluate(shell, ast);
 	parser_deinit(&shell->parser);
 	ast_deinit(ast);
 }
@@ -36,9 +41,11 @@ void	shellzin_repl(t_shellzin *shell)
 			ft_putendl_fd("exit", 1);
 			break ;
 		}
-		shellzin_evaluate(line, shell);
 		if (*line)
+		{
+			shellzin_evaluate(line, shell);
 			add_history(line);
+		}
 		free(line);
 	}
 }

@@ -11,6 +11,8 @@ t_parser parser_init(t_lexer *lexer)
 	parser.tokens = NULL;
 	parser.cursor = 0;
 	parser.size = 0;
+	parser.has_error = false;
+	parser.error_msg = NULL;
 	return (parser);
 }
 
@@ -44,14 +46,14 @@ void parser_batch_tokens(t_parser *parser)
 	parser->tokens[parser->size++] = token;
 }
 
-bool parser_iseof(t_parser *parser)
-{
-	return parser->cursor >= parser->size;
-}
-
 t_token parser_peek(t_parser *parser)
 {
 	return parser->tokens[parser->cursor];
+}
+
+bool parser_iseof(t_parser *parser)
+{
+	return parser->cursor >= parser->size || (parser_peek(parser).kind == TokenKind_Eof);
 }
 
 t_token parser_consume(t_parser *parser)
@@ -78,6 +80,8 @@ t_ast *parse_word(t_parser *parser)
 	t_ast	*word_node;
 	e_token_kind	kind;
 
+	if (parser->has_error)
+		return (NULL);
 	kind = parser_peek(parser).kind;
 	if (kind != TokenKind_Word &&
 			kind != TokenKind_StringLiteral)
@@ -94,6 +98,8 @@ t_ast *parse_word_list(t_parser *parser)
 	t_ast	*list_node;
 	t_ast	*word_node;
 
+	if (parser->has_error)
+		return (NULL);
 	word_node = parse_word(parser);
 	if (!word_node)
 		return (NULL);
@@ -112,6 +118,8 @@ t_ast *parse_redirect(t_parser *parser)
 	t_ast	*right;
 	e_token_kind	kind;
 
+	if (parser->has_error)
+		return (NULL);
 	node = parse_word_list(parser);
 	if (node == NULL)
 		return (NULL);
@@ -121,9 +129,13 @@ t_ast *parse_redirect(t_parser *parser)
 		if (!is_redirection_symbol(kind))
 			break;
 		parser_consume(parser);
-		right = parse_word(parser);
+		right = parse_word_list(parser);
 		if (right == NULL)
+		{
+			parser->has_error = true;
+			parser->error_msg = "shellzin: syntax error near unexpected token `newline'";
 			break;
+		}
 		redirect_node = ast_init(AstKind_Redirect);
 		redirect_node->u_node.redirect_node.kind = kind;
 		redirect_node->u_node.redirect_node.left = node;
@@ -139,6 +151,8 @@ t_ast *parse_pipe(t_parser *parser)
 	t_ast	*node;
 	t_ast	*right;
 
+	if (parser->has_error)
+		return (NULL);
 	node = parse_redirect(parser);
 	if (node == NULL)
 		return (NULL);
@@ -148,7 +162,11 @@ t_ast *parse_pipe(t_parser *parser)
 		parser_consume(parser);
 		right = parse_redirect(parser);
 		if (right == NULL)
+		{
+			parser->has_error = true;
+			parser->error_msg = "shellzin: syntax error near unexpected token `newline'";
 			break;
+		}
 		pipe_node = ast_init(AstKind_Pipe);
 		pipe_node->u_node.pipe_node.left = node;
 		pipe_node->u_node.pipe_node.right = right;
