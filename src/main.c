@@ -14,15 +14,27 @@
 
 void	shellzin_evaluate(char *line, t_shellzin *shell)
 {
-	t_ast *ast;
+	t_ast	*ast;
 
 	ast = parse(line, shell);
 	if (shell->parser.has_error)
-		ft_putendl_fd(shell->parser.error_msg, 1);
+	{
+		ft_printf("%s near `%s`\n",
+						shell->parser.error_msg,
+						get_token_symbol(parser_peek_last(&shell->parser)));
+		if (shell->parser.error_from_lexer)
+			parser_free_token_list(&shell->parser);
+	}
 	else if (!parser_iseof(&shell->parser))
-		ft_putendl_fd("syntax error", 1);
+	{
+		ft_printf("shellzin: syntax error: Unexpected token near `%s`\n",
+						get_token_symbol(parser_peek(&shell->parser)));
+	}
 	else if (ast)
+	{
+		shell->ast = ast;
 		ast_evaluate(shell, ast);
+	}
 	parser_deinit(&shell->parser);
 	ast_deinit(ast);
 }
@@ -35,6 +47,8 @@ void	shellzin_repl(t_shellzin *shell)
 	signal(SIGQUIT, SIG_IGN);
 	while (1)
 	{
+		if (shell->last_status == 131)
+			ft_putendl_fd("Quit", 2);
 		line = readline("> ");
 		if (!line)
 		{
@@ -67,6 +81,15 @@ int	main(int ac, char *av[], char *envp[])
 	/*shellzin_evaluate("'ls'", &shell);*/
 	/*shellzin_evaluate("touch ls \"libft\"\"a\"\"b\"\"", &shell);*/
 	/*shellzin_evaluate("echo \'\"a\"\'b\'\'c\'\"d\"\'", &shell);*/
+	/*shellzin_evaluate("echo \"$HOME $HOME $HOME '$HOME'\" '$HOME'", &shell);*/
+	/*shellzin_evaluate("\"\"", &shell);*/
+	/*shellzin_evaluate("''", &shell);*/
+	/*shellzin_evaluate("\"\"\"\"\"\"\"\"", &shell);*/
+	/*shellzin_evaluate("\"", &shell);*/
+	/*shellzin_evaluate("echo 'ok' 'a' 'b", &shell);*/
+	/*shellzin_evaluate("\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
+	/*shellzin_evaluate("\"\"\"\"\"\"\"\"\"\"\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
+	/*shellzin_evaluate("\"\"\"\"\"\"\"\"\"\"\"\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
 }

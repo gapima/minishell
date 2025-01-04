@@ -50,12 +50,14 @@ int wait_children(pid_t pid)
 	int status;
 
 	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
+	if (WIFSIGNALED(status))
+		status = WTERMSIG(status) + 128;
+	else if (WIFEXITED(status))
 		status = WEXITSTATUS(status);
 	return (status);
 }
 
-int command_spawn(char **argv, char **env)
+int command_spawn(char **argv, char **env, t_shellzin *shell)
 {
 	pid_t pid;
 	int status;
@@ -65,9 +67,15 @@ int command_spawn(char **argv, char **env)
 		return (-1);
 	if (pid == 0)
 	{
+		signal(SIGQUIT, SIG_DFL);
 		execve(argv[0], argv, env);
 		perror(strerror(errno));
-		exit(-1);
+		free(argv);
+		free(env);
+		ast_deinit(shell->ast);
+		parser_deinit(&shell->parser);
+		shellzin_deinit(shell);
+		exit(127);
 	}
 	status = wait_children(pid);
 	return (status);
@@ -85,7 +93,7 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 	cmd = search_path(shell, argv[0]);
 	if (cmd)
 		argv[0] = cmd;
-	status = command_spawn(argv, env);
+	status = command_spawn(argv, env, shell);
 	if (status != -1)
 		shell->last_status = status;
 	free(cmd);

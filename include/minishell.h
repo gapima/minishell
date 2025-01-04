@@ -73,12 +73,16 @@ typedef struct s_parser
 	size_t cursor;
 	bool has_error;
 	char *error_msg;
+	bool error_from_lexer;
 } t_parser;
 
 t_parser	parser_init(t_lexer *lexer);
 void			parser_deinit(t_parser *parser);
 void			parser_batch_tokens(t_parser *parser);
 bool			parser_iseof(t_parser *parser);
+void			parser_free_token_list(t_parser *parser);
+t_token		parser_peek(t_parser *parser);
+t_token		parser_peek_last(t_parser *parser);
 
 typedef enum e_ast_kind
 {
@@ -132,6 +136,7 @@ typedef struct s_shellzin
 	t_list	*env;
 	t_lexer lexer;
 	t_parser parser;
+	t_ast *ast;
 }	t_shellzin;
 
 void	ast_print_state(t_ast *ast, int lv);

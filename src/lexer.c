@@ -35,11 +35,11 @@ void	lexer_skip_whitespaces(t_lexer *lexer)
 char	*get_token_symbol(t_token token)
 {
 	if (token.kind == TokenKind_Eof)
-		return ("<EOF>");
+		return ("\\n");
 	else if (token.kind == TokenKind_Word)
-		return ("<WORD>");
+		return (token.content);
 	else if (token.kind == TokenKind_StringLiteral)
-		return ("<StringLiteral>");
+		return (token.content);
 	else if (token.kind == TokenKind_Pipe)
 		return ("|");
 	else if (token.kind == TokenKind_LArrow)
@@ -73,7 +73,7 @@ void lexer_consume_string_literal(char c, t_lexer *lexer, t_token *token)
 	lexer_consume_until(lexer, c);
 	if (!lexer_consume_specific(lexer, c)) {
 		token->kind = TokenKind_Error;
-		token->content = "Unclosed quotes";
+		token->content = "shellzin: syntax error: Unclosed quotes";
 		return ;
 	}
 	token->end = lexer->cursor;

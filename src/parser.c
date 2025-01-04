@@ -10,6 +10,7 @@ t_parser parser_init(t_lexer *lexer)
 	parser.size = 0;
 	parser.has_error = false;
 	parser.error_msg = NULL;
+	parser.error_from_lexer = false;
 	return (parser);
 }
 
@@ -51,7 +52,7 @@ void parser_batch_tokens(t_parser *parser)
 		if (token.kind == TokenKind_Error)
 		{
 			parser_set_error(parser, token.content);
-			parser_free_token_list(parser);
+			parser->error_from_lexer = true;
 			return ;
 		}
 		parser->tokens = ft_realloc(parser->tokens,
@@ -69,6 +70,15 @@ void parser_batch_tokens(t_parser *parser)
 t_token parser_peek(t_parser *parser)
 {
 	return parser->tokens[parser->cursor];
+}
+
+t_token parser_peek_last(t_parser *parser)
+{
+	if (parser->size > 0)
+		return parser->tokens[parser->size-1];
+	if (parser->size == 0)
+		return (t_token){0};
+	return parser->tokens[0];
 }
 
 bool parser_iseof(t_parser *parser)
@@ -133,7 +143,8 @@ void try_expand_variable(char **str, t_shellzin *shell)
 	if (!var)
 		var = ft_strdup("");
 	len = start + ft_strlen(var) + ft_strlen(after + end) + 1;
-	ret = ft_calloc(len, sizeof(char));
+	ret = ft_calloc(sizeof(char), len);
+	shellzin_assert(ret != NULL, "(ft_realloc) could not allocate memory");
 	ft_memcpy(ret, *str, start);
 	ft_memcpy(ret + start, var, ft_strlen(var));
 	ft_memcpy(ret + start + ft_strlen(var), after + end,
@@ -141,6 +152,7 @@ void try_expand_variable(char **str, t_shellzin *shell)
 	free(*str);
 	free(var);
 	*str = ret;
+	try_expand_variable(str, shell);
 }
 
 char *collect_next_substring(char *str, size_t *start, size_t size, bool *expand)
@@ -182,11 +194,6 @@ void string_try_expand(char **str, size_t size, t_shellzin *shell)
 	while (start < size)
 	{
 		curr = collect_next_substring(*str, &start, size, &should_expand);
-		if (*curr == '\0')
-		{
-			free(curr);
-			continue;
-		}
 		if (should_expand)
 			try_expand_variable(&curr, shell);
 		joined = ft_strjoin(joined, curr);
@@ -206,15 +213,11 @@ t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 		return (NULL);
 	kind = parser_peek(parser).kind;
 	if (kind != TokenKind_Word &&
-		kind != TokenKind_StringLiteral)
+			kind != TokenKind_StringLiteral)
 		return (NULL);
-
 	token = parser_consume(parser);
 	word_node = ast_init(AstKind_Word);
-	if (kind == TokenKind_StringLiteral)
-		string_try_expand(&token.content, token.end-token.start, shell);
-	else
-		try_expand_variable(&token.content, shell);
+	string_try_expand(&token.content, token.end-token.start, shell);
 	word_node->u_node.word_node.content = token.content;
 	return (word_node);
 }
@@ -237,9 +240,19 @@ t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
 	return (list_node);
 }
 
+t_ast *ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
+{
+	t_ast	*redirect_node;
+
+	redirect_node = ast_init(AstKind_Redirect);
+	redirect_node->u_node.redirect_node.kind = kind;
+	redirect_node->u_node.redirect_node.left = node;
+	redirect_node->u_node.redirect_node.right = right;
+	return (redirect_node);
+}
+
 t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 {
-	t_ast					*redirect_node;
 	t_ast					*node;
 	t_ast					*right;
 	e_token_kind	kind;
@@ -257,14 +270,11 @@ t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 		right = parse_word_list(parser, shell);
 		if (right == NULL)
 		{
-			parser_set_error(parser, "shellzin: syntax error");
+			parser_set_error(parser,
+										"shellzin: syntax error: Unexpected token");
 			break;
 		}
-		redirect_node = ast_init(AstKind_Redirect);
-		redirect_node->u_node.redirect_node.kind = kind;
-		redirect_node->u_node.redirect_node.left = node;
-		redirect_node->u_node.redirect_node.right = right;
-		node = redirect_node;
+		node = ast_redirect_node_init(kind, node, right);
 	}
 	return (node);
 }
@@ -287,7 +297,8 @@ t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
 		right = parse_redirect(parser, shell);
 		if (right == NULL)
 		{
-			parser_set_error(parser, "shellzin: syntax error");
+			parser_set_error(parser,
+										"shellzin: syntax error: Unexpected token");
 			break;
 		}
 		pipe_node = ast_init(AstKind_Pipe);
