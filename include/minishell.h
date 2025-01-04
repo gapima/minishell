@@ -85,6 +85,7 @@ bool			parser_iseof(t_parser *parser);
 void			parser_free_token_list(t_parser *parser);
 t_token		parser_peek(t_parser *parser);
 t_token		parser_peek_last(t_parser *parser);
+void			parser_set_error(t_parser *parser, char *msg);
 
 typedef enum e_ast_kind
 {

@@ -164,7 +164,6 @@ t_ast *redirection_get_command_node(t_ast *ast)
 	return (ast);
 }
 
-
 int open_safe(char *path, int flags, int bflags)
 {
 	int fd;
@@ -200,9 +199,7 @@ void redirection_prepare(t_ast *ast)
 		close(ast->u_node.redirect_node.fd);
 	}
 	else if (ast->u_node.redirect_node.kind == TokenKind_DLArrow)
-	{
 		shellzin_assert(0, "heredoc not implemented");
-	}
 }
 
 void redirect_evaluate(t_shellzin *shell, t_ast *ast)
@@ -225,8 +222,39 @@ void redirect_evaluate(t_shellzin *shell, t_ast *ast)
 
 void pipe_evaluate(t_shellzin *shell, t_ast *ast)
 {
-	(void)shell;
-	ast_print_state(ast, 0);
+	pid_t	pid;
+	int		restore;
+	int		pipes[2];
+
+	if (pipe(pipes) == -1)
+	{
+		printf("shellzin: pipe: Unexpected error\n");
+		shell->last_status = 1;
+		return ;
+	}
+	pid = fork();
+	if (pid == -1)
+	{
+		printf("shellzin: pipe: Unexpected error\n");
+		shell->last_status = 1;
+		return ;
+	}
+	restore = dup(STDIN_FILENO);
+	if (pid == 0)
+	{
+		close(pipes[0]);
+		dup2(pipes[1], STDOUT_FILENO);
+		close(pipes[1]);
+		ast_evaluate(shell, ast->u_node.pipe_node.left);
+		exit(shell->last_status);
+	}
+	close(pipes[1]);
+	dup2(pipes[0], STDIN_FILENO);
+	close(pipes[0]);
+	ast_evaluate(shell, ast->u_node.pipe_node.right);
+	dup2(restore, STDIN_FILENO);
+	close(restore);
+	waitpid(pid, 0, 0);
 }
 
 void ast_evaluate(t_shellzin *shell, t_ast *ast)
