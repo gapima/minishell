@@ -246,6 +246,9 @@ void pipe_evaluate(t_shellzin *shell, t_ast *ast)
 		dup2(pipes[1], STDOUT_FILENO);
 		close(pipes[1]);
 		ast_evaluate(shell, ast->u_node.pipe_node.left);
+		ast_deinit(shell->ast);
+		parser_deinit(&shell->parser);
+		shellzin_deinit(shell);
 		exit(shell->last_status);
 	}
 	close(pipes[1]);
