@@ -65,55 +65,35 @@ void	lexer_print_state(t_lexer *lexer)
 	}
 }
 
-void lexer_consume_string_cleanup(void *a, void *b, t_token *token)
-{
-	free(a);
-	free(b);
-	token->kind = TokenKind_Error;
-	token->content = "Unclosed quotes";
-}
-
 void lexer_consume_string_literal(char c, t_lexer *lexer, t_token *token)
 {
-	t_token	next;
-	char		*str;
-
+	lexer_consume_specific(lexer, c);
 	token->kind = TokenKind_StringLiteral;
-	str = NULL;
-	next.content = NULL;
-	while (c == '\'' || c == '"')
-	{
-		next.start = lexer->cursor + 1;
-		lexer_consume_specific(lexer, c);
-		lexer_consume_until(lexer, c);
-		if (!lexer_consume_specific(lexer, c)) {
-			lexer_consume_string_cleanup(next.content, str, token);
-			return ;
-		}
-		next.end = lexer->cursor - 1;
-		str = ft_substr(lexer->content, next.start, next.end-next.start);
-		next.content = ft_strjoin(next.content, str);
-		free(str);
-		str = NULL;
-		c = lexer_peek(lexer);
+
+	lexer_consume_until(lexer, c);
+	if (!lexer_consume_specific(lexer, c)) {
+		token->kind = TokenKind_Error;
+		token->content = "Unclosed quotes";
+		return ;
 	}
 	token->end = lexer->cursor;
-	token->content = next.content;
-	token->size = ft_strlen(token->content);
+	token->content = ft_substr(lexer->content,
+														token->start,
+														token->end - token->start);
 }
 
 void lexer_consume_word(t_lexer *lexer, t_token *token)
 {
 	token->kind = TokenKind_Word;
 	while (!lexer_iseof(lexer) &&
-					ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
+		ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
 	{
 		lexer_consume(lexer);
 	}
 	token->end = lexer->cursor;
 	token->content = ft_substr(lexer->content,
-													 token->start,
-													 token->end - token->start);
+														token->start,
+														token->end - token->start);
 }
 
 void lexer_try_join_tokens(t_lexer *lexer, t_token *token)
@@ -128,16 +108,17 @@ void lexer_try_join_tokens(t_lexer *lexer, t_token *token)
 		next.start = lexer->cursor;
 		c = lexer_peek(lexer);
 		if (c == '\'' || c == '\"')
-		{
 			lexer_consume_string_literal(c, lexer, &next);
-			if (next.size == 0)
-			{
-				free(next.content);
-				continue;
-			}
-		}
-		else
+		else if (ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
 			lexer_consume_word(lexer, &next);
+
+		if (next.kind == TokenKind_Error)
+		{
+			token->kind = TokenKind_Error;
+			free(token->content);
+			token->content = next.content;
+			break;
+		}
 		if (next.content)
 		{
 			token->content = ft_strjoin(token->content, next.content);
@@ -156,7 +137,6 @@ t_token	lexer_next(t_lexer *lexer)
 	token.content = NULL;
 	token.start = lexer->cursor;
 	token.end = lexer->size;
-	token.size = lexer->cursor;
 	if (lexer_iseof(lexer))
 		return (token);
 	c = lexer_peek(lexer);
@@ -164,7 +144,6 @@ t_token	lexer_next(t_lexer *lexer)
 	{
 		lexer_consume_specific(lexer, '|');
 		token.kind = TokenKind_Pipe;
-		token.end = lexer->cursor;
 	}
 	else if (c == '<')
 	{
@@ -172,7 +151,6 @@ t_token	lexer_next(t_lexer *lexer)
 		token.kind = TokenKind_LArrow;
 		if (lexer_consume_specific(lexer, '<'))
 			token.kind = TokenKind_DLArrow;
-		token.end = lexer->cursor;
 	}
 	else if (c == '>')
 	{
@@ -180,7 +158,6 @@ t_token	lexer_next(t_lexer *lexer)
 		token.kind = TokenKind_RArrow;
 		if (lexer_consume_specific(lexer, '>'))
 			token.kind = TokenKind_DRArrow;
-		token.end = lexer->cursor;
 	}
 	else if (c == '\'' || c == '"')
 	{
@@ -192,5 +169,6 @@ t_token	lexer_next(t_lexer *lexer)
 		lexer_consume_word(lexer, &token);
 		lexer_try_join_tokens(lexer, &token);
 	}
+	token.end = lexer->cursor;
 	return (token);
 }

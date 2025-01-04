@@ -95,13 +95,108 @@ bool is_redirection_symbol(e_token_kind kind)
 	kind == TokenKind_DLArrow);
 }
 
-void string_trim_quotes(char **str, size_t size)
+void try_expand_variable(char **str, t_shellzin *shell)
 {
-	(*str)[size-1] = '\0';
-	*str = ft_memmove(*str, (*str)+1, size);
+	char	*after;
+	char	*var;
+	char	*ret;
+	char	*s;
+
+	size_t	start;
+	size_t	end;
+	size_t	len;
+
+	var = NULL;
+	if (!str || !*str || !shell)
+		return;
+	after = ft_strchr(*str, '$');
+	if (!after)
+		return;
+	start = after - (*str);
+	end = 1;
+	while (after[end] && !ft_strchr(SPECIAL, after[end]))
+		end++;
+	if (end == 1)
+		return;
+	s = ft_substr(*str, start + 1, end - 1);
+	if (!s)
+		return;
+	if (s[0] == '?')
+		var = ft_itoa(shell->last_status);
+	else
+	{
+		var = shellzin_env_search(shell, s);
+		if (var)
+			var = ft_strdup(var + 1);
+	}
+	free(s);
+	if (!var)
+		var = ft_strdup("");
+	len = start + ft_strlen(var) + ft_strlen(after + end) + 1;
+	ret = ft_calloc(len, sizeof(char));
+	ft_memcpy(ret, *str, start);
+	ft_memcpy(ret + start, var, ft_strlen(var));
+	ft_memcpy(ret + start + ft_strlen(var), after + end,
+					 ft_strlen(after + end));
+	free(*str);
+	free(var);
+	*str = ret;
 }
 
-t_ast *parse_word(t_parser *parser)
+char *collect_next_substring(char *str, size_t *start, size_t size, bool *expand)
+{
+	char		quote;
+	size_t	st;
+	size_t	end;
+	char		*ret;
+
+	quote = '\0';
+	if (str[*start] == '\'' || str[*start] == '\"')
+		quote = str[*start];
+	*expand = quote != '\'';
+	st = *start;
+	if (quote != '\0')
+		st += 1;
+	end = st;
+	while (end < size && quote != '\0' && str[end] != quote)
+		end += 1;
+	while (end < size && quote == '\0' && !(str[end] == '\'' || str[end] == '\"'))
+		end += 1;
+	ret = ft_substr(str, st, end-st);
+	if (quote != '\0')
+		end += 1;
+	*start = end;
+	return (ret);
+}
+
+void string_try_expand(char **str, size_t size, t_shellzin *shell)
+{
+	size_t	start;
+	char		*curr;
+	char		*joined;
+	bool		should_expand;
+
+	start = 0;
+	joined = NULL;
+	should_expand = false;
+	while (start < size)
+	{
+		curr = collect_next_substring(*str, &start, size, &should_expand);
+		if (*curr == '\0')
+		{
+			free(curr);
+			continue;
+		}
+		if (should_expand)
+			try_expand_variable(&curr, shell);
+		joined = ft_strjoin(joined, curr);
+		free(curr);
+	}
+	free(*str);
+	*str = joined;
+}
+
+t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 {
 	t_ast					*word_node;
 	t_token				token;
@@ -116,32 +211,33 @@ t_ast *parse_word(t_parser *parser)
 
 	token = parser_consume(parser);
 	word_node = ast_init(AstKind_Word);
-	/*if (kind == TokenKind_StringLiteral)*/
-	/*	string_trim_quotes(&token.content, token.end-token.start);*/
-	//TODO(rnoba) expand $
+	if (kind == TokenKind_StringLiteral)
+		string_try_expand(&token.content, token.end-token.start, shell);
+	else
+		try_expand_variable(&token.content, shell);
 	word_node->u_node.word_node.content = token.content;
 	return (word_node);
 }
 
-t_ast *parse_word_list(t_parser *parser)
+t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
 {
 	t_ast	*list_node;
 	t_ast	*word_node;
 
 	if (parser->has_error)
 		return (NULL);
-	word_node = parse_word(parser);
+	word_node = parse_word(parser, shell);
 	if (!word_node)
 		return (NULL);
 	list_node = ast_init(AstKind_List);
 	while (word_node) {
 		ft_lstadd_back(&list_node->u_node.list_node.list, ft_lstnew(word_node));
-		word_node = parse_word(parser);
+		word_node = parse_word(parser, shell);
 	}
 	return (list_node);
 }
 
-t_ast *parse_redirect(t_parser *parser)
+t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 {
 	t_ast					*redirect_node;
 	t_ast					*node;
@@ -150,7 +246,7 @@ t_ast *parse_redirect(t_parser *parser)
 
 	if (parser->has_error)
 		return (NULL);
-	node = parse_word_list(parser);
+	node = parse_word_list(parser, shell);
 	if (node == NULL)
 		return (NULL);
 	while (1) {
@@ -158,7 +254,7 @@ t_ast *parse_redirect(t_parser *parser)
 		if (!is_redirection_symbol(kind))
 			break;
 		parser_consume(parser);
-		right = parse_word_list(parser);
+		right = parse_word_list(parser, shell);
 		if (right == NULL)
 		{
 			parser_set_error(parser, "shellzin: syntax error");
@@ -173,7 +269,7 @@ t_ast *parse_redirect(t_parser *parser)
 	return (node);
 }
 
-t_ast *parse_pipe(t_parser *parser)
+t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
 {
 	t_ast	*pipe_node;
 	t_ast	*node;
@@ -181,14 +277,14 @@ t_ast *parse_pipe(t_parser *parser)
 
 	if (parser->has_error)
 		return (NULL);
-	node = parse_redirect(parser);
+	node = parse_redirect(parser, shell);
 	if (node == NULL)
 		return (NULL);
 	while (1) {
 		if (parser_peek(parser).kind != TokenKind_Pipe)
 			break;
 		parser_consume(parser);
-		right = parse_redirect(parser);
+		right = parse_redirect(parser, shell);
 		if (right == NULL)
 		{
 			parser_set_error(parser, "shellzin: syntax error");
@@ -245,5 +341,5 @@ t_ast *parse(char *line, t_shellzin *shell) {
 	shell->parser = parser_init(&shell->lexer);
 
 	parser_batch_tokens(&shell->parser);
-	return (parse_pipe(&shell->parser));
+	return (parse_pipe(&shell->parser, shell));
 }

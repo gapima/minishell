@@ -44,7 +44,6 @@ typedef struct s_token
 {
 	e_token_kind kind;
 	char	*content;
-	size_t size;
 	size_t start;
 	size_t end;
 }	t_token;
