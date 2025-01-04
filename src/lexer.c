@@ -48,8 +48,6 @@ char	*get_token_symbol(t_token token)
 		return (">");
 	else if (token.kind == TokenKind_DRArrow)
 		return (">>");
-	else if (token.kind == TokenKind_Skip)
-		return ("<SKIP>");
 	else if (token.kind == TokenKind_DLArrow)
 		return ("<<");
 	return (NULL);
@@ -67,16 +65,98 @@ void	lexer_print_state(t_lexer *lexer)
 	}
 }
 
+void lexer_consume_string_cleanup(void *a, void *b, t_token *token)
+{
+	free(a);
+	free(b);
+	token->kind = TokenKind_Error;
+	token->content = "Unclosed quotes";
+}
+
+void lexer_consume_string_literal(char c, t_lexer *lexer, t_token *token)
+{
+	t_token	next;
+	char		*str;
+
+	token->kind = TokenKind_StringLiteral;
+	str = NULL;
+	next.content = NULL;
+	while (c == '\'' || c == '"')
+	{
+		next.start = lexer->cursor + 1;
+		lexer_consume_specific(lexer, c);
+		lexer_consume_until(lexer, c);
+		if (!lexer_consume_specific(lexer, c)) {
+			lexer_consume_string_cleanup(next.content, str, token);
+			return ;
+		}
+		next.end = lexer->cursor - 1;
+		str = ft_substr(lexer->content, next.start, next.end-next.start);
+		next.content = ft_strjoin(next.content, str);
+		free(str);
+		str = NULL;
+		c = lexer_peek(lexer);
+	}
+	token->end = lexer->cursor;
+	token->content = next.content;
+	token->size = ft_strlen(token->content);
+}
+
+void lexer_consume_word(t_lexer *lexer, t_token *token)
+{
+	token->kind = TokenKind_Word;
+	while (!lexer_iseof(lexer) &&
+					ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
+	{
+		lexer_consume(lexer);
+	}
+	token->end = lexer->cursor;
+	token->content = ft_substr(lexer->content,
+													 token->start,
+													 token->end - token->start);
+}
+
+void lexer_try_join_tokens(t_lexer *lexer, t_token *token)
+{
+	t_token next;
+	char		c;
+
+	next.content = NULL;
+	while (!lexer_iseof(lexer) &&
+		ft_strchr(BLANKS, lexer_peek(lexer)) == NULL)
+	{
+		next.start = lexer->cursor;
+		c = lexer_peek(lexer);
+		if (c == '\'' || c == '\"')
+		{
+			lexer_consume_string_literal(c, lexer, &next);
+			if (next.size == 0)
+			{
+				free(next.content);
+				continue;
+			}
+		}
+		else
+			lexer_consume_word(lexer, &next);
+		if (next.content)
+		{
+			token->content = ft_strjoin(token->content, next.content);
+			free(next.content);
+		}
+	}
+}
+
 t_token	lexer_next(t_lexer *lexer)
 {
 	t_token	token;
-	char	c;
+	char		c;
 
 	lexer_skip_whitespaces(lexer);
 	token.kind = TokenKind_Eof;
 	token.content = NULL;
 	token.start = lexer->cursor;
 	token.end = lexer->size;
+	token.size = lexer->cursor;
 	if (lexer_iseof(lexer))
 		return (token);
 	c = lexer_peek(lexer);
@@ -104,31 +184,13 @@ t_token	lexer_next(t_lexer *lexer)
 	}
 	else if (c == '\'' || c == '"')
 	{
-		lexer_consume_specific(lexer, c);
-		token.kind = TokenKind_StringLiteral;
-
-		lexer_consume_until(lexer, c);
-		if (!lexer_consume_specific(lexer, c)) {
-			//ERROR unclosed quotes
-			exit(1);
-		}
-		token.end = lexer->cursor;
-		if (token.end - token.start <= 2) {
-			token.kind = TokenKind_Skip;
-			return (token);
-		}
-		token.content = ft_substr(lexer->content, \
-		token.start, token.end - token.start);
+		lexer_consume_string_literal(c, lexer, &token);
+		lexer_try_join_tokens(lexer, &token);
 	}
 	else
 	{
-		token.kind = TokenKind_Word;
-		while (!lexer_iseof(lexer) && \
-		ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
-			lexer_consume(lexer);
-		token.end = lexer->cursor;
-		token.content = ft_substr(lexer->content, \
-		token.start, token.end - token.start);
+		lexer_consume_word(lexer, &token);
+		lexer_try_join_tokens(lexer, &token);
 	}
 	return (token);
 }

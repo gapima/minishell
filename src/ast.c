@@ -79,7 +79,6 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 	char	**env;
 	char	*cmd;
 	int		status;
-	(void)shell;
 
 	env = join_string_list(shell->env);
 	argv = join_word_list(ast->u_node.list_node.list);

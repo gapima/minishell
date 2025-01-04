@@ -17,11 +17,11 @@ void	shellzin_evaluate(char *line, t_shellzin *shell)
 	t_ast *ast;
 
 	ast = parse(line, shell);
-	if (!parser_iseof(&shell->parser))
-		ft_putendl_fd("syntax error", 1);
-	else if (shell->parser.has_error)
+	if (shell->parser.has_error)
 		ft_putendl_fd(shell->parser.error_msg, 1);
-	else
+	else if (!parser_iseof(&shell->parser))
+		ft_putendl_fd("syntax error", 1);
+	else if (ast)
 		ast_evaluate(shell, ast);
 	parser_deinit(&shell->parser);
 	ast_deinit(ast);
@@ -57,6 +57,16 @@ int	main(int ac, char *av[], char *envp[])
 	(void)ac;
 	(void)av;
 	shellzin_init(&shell, envp);
+	/*shellzin_evaluate("ls -al \"./libft\"", &shell);*/
+	/*shellzin_evaluate("touch \"a\" 'b' c", &shell);*/
+	/*shellzin_evaluate("\"ls\" \"-al\"", &shell);*/
+	/*shellzin_evaluate("rm -f a b c", &shell);*/
+	/*shellzin_evaluate("touch \"a\"\"b\"\"c\" ", &shell);*/
+	/*shellzin_evaluate("'ls'", &shell);*/
+	/*shellzin_evaluate("rm -f 'a'\"b\"\"c\" ", &shell);*/
+	/*shellzin_evaluate("'ls'", &shell);*/
+	/*shellzin_evaluate("touch ls \"libft\"\"a\"\"b\"\"", &shell);*/
+	/*shellzin_evaluate("echo \'\"a\"\'b\'\'c\'\"d\"\'", &shell);*/
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
 }
