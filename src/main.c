@@ -90,6 +90,12 @@ int	main(int ac, char *av[], char *envp[])
 	/*shellzin_evaluate("\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
 	/*shellzin_evaluate("\"\"\"\"\"\"\"\"\"\"\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
 	/*shellzin_evaluate("\"\"\"\"\"\"\"\"\"\"\"\"\"\"'$HOME '$HOME' $HOME $HOME'\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", &shell);*/
-	shellzin_repl(&shell);
+
+	shellzin_evaluate("echo a > b c d", &shell);
+	shellzin_evaluate("cat b", &shell);
+	shellzin_evaluate("cat b", &shell);
+	shellzin_evaluate("echo po>oi<oi>tst", &shell);
+	shellzin_evaluate("cat tst", &shell);
+	/*shellzin_repl(&shell);*/
 	shellzin_deinit(&shell);
 }

@@ -106,12 +106,14 @@ void lexer_try_join_tokens(t_lexer *lexer, t_token *token)
 		ft_strchr(BLANKS, lexer_peek(lexer)) == NULL)
 	{
 		next.start = lexer->cursor;
+		next.content = NULL;
 		c = lexer_peek(lexer);
 		if (c == '\'' || c == '\"')
 			lexer_consume_string_literal(c, lexer, &next);
 		else if (ft_strchr(SPECIAL, lexer_peek(lexer)) == NULL)
 			lexer_consume_word(lexer, &next);
-
+		if (!next.content)
+			break;
 		if (next.kind == TokenKind_Error)
 		{
 			token->kind = TokenKind_Error;
@@ -119,11 +121,8 @@ void lexer_try_join_tokens(t_lexer *lexer, t_token *token)
 			token->content = next.content;
 			break;
 		}
-		if (next.content)
-		{
-			token->content = ft_strjoin(token->content, next.content);
-			free(next.content);
-		}
+		token->content = ft_strjoin(token->content, next.content);
+		free(next.content);
 	}
 }
 

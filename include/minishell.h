@@ -23,6 +23,8 @@
 # include <readline/history.h>
 # include <sys/wait.h>
 # include <errno.h>
+# include <sys/types.h>
+# include <sys/stat.h>
 
 # define BLANKS " \t"
 # define SPECIAL " \t<>|\'\""
@@ -110,6 +112,7 @@ typedef struct e_ast_redirect
 	t_ast *left;
 	t_ast *right;
 	e_token_kind kind;
+	int	fd;
 } t_ast_redirect;
 
 typedef struct e_ast_pipe

@@ -248,6 +248,7 @@ t_ast *ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
 	redirect_node->u_node.redirect_node.kind = kind;
 	redirect_node->u_node.redirect_node.left = node;
 	redirect_node->u_node.redirect_node.right = right;
+	redirect_node->u_node.redirect_node.fd = 0;
 	return (redirect_node);
 }
 
@@ -311,9 +312,13 @@ t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
 
 void print_indent(int lv)
 {
-	while (lv--) {
+	int n;
+
+	n = 0;
+	while (n < lv) {
 		ft_putchar(' ');
 		ft_putchar(' ');
+		n++;
 	}
 }
 
