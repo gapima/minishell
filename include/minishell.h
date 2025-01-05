@@ -26,8 +26,8 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 
-# define BLANKS " \t"
-# define SPECIAL " \t<>|\'\""
+# define BLANKS " \t\v\f\n\v\f\r"
+# define SPECIAL " \v\f\n\v\f\r\t<>|\'\""
 
 typedef enum	e_token_kind
 {

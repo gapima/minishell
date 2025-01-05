@@ -262,7 +262,7 @@ t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 		return (NULL);
 	node = parse_word_list(parser, shell);
 	if (node == NULL)
-		return (NULL);
+		node = ast_init(AstKind_List);
 	while (1) {
 		kind = parser_peek(parser).kind;
 		if (!is_redirection_symbol(kind))

@@ -111,13 +111,16 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 
 	env = join_string_list(shell->env);
 	argv = join_word_list(ast->u_node.list_node.list);
-	cmd = search_path(shell, argv[0]);
-	if (cmd)
-		argv[0] = cmd;
-	status = command_spawn(argv, env, shell);
-	if (status != -1)
-		shell->last_status = status;
-	free(cmd);
+	if (argv[0])
+	{
+		cmd = search_path(shell, argv[0]);
+		if (cmd)
+			argv[0] = cmd;
+		status = command_spawn(argv, env, shell);
+		if (status != -1)
+			shell->last_status = status;
+		free(cmd);
+	}
 	free(env);
 	free(argv);
 }

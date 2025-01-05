@@ -100,6 +100,10 @@ int	main(int ac, char *av[], char *envp[])
 	/*shellzin_evaluate("ls -al > file", &shell);*/
 	/*shellzin_evaluate("cat file", &shell);*/
 	/*shellzin_evaluate("rm -f ./file", &shell);*/
+	/*shellzin_evaluate("ls >", &shell);*/
+	/*shellzin_evaluate("> file ls -al", &shell);*/
+	/*shellzin_evaluate("cat file", &shell);*/
+	/*shellzin_evaluate("rm -f file", &shell);*/
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
 }
