@@ -16,6 +16,7 @@ t_parser parser_init(t_lexer *lexer)
 
 void parser_deinit(t_parser *parser)
 {
+	rl_clear_history();
 	free(parser->tokens);
 }
 
@@ -97,7 +98,7 @@ t_token parser_consume(t_parser *parser)
 	return (token);
 }
 
-bool is_redirection_symbol(e_token_kind kind)
+static bool is_redirection_symbol(e_token_kind kind)
 {
 	return (kind == TokenKind_LArrow ||
 	kind == TokenKind_RArrow ||
@@ -105,7 +106,7 @@ bool is_redirection_symbol(e_token_kind kind)
 	kind == TokenKind_DLArrow);
 }
 
-void try_expand_variable(char **str, t_shellzin *shell)
+static void try_expand_variable(char **str, t_shellzin *shell)
 {
 	char	*after;
 	char	*var;
@@ -124,7 +125,9 @@ void try_expand_variable(char **str, t_shellzin *shell)
 		return;
 	start = after - (*str);
 	end = 1;
-	while (after[end] && !ft_strchr(SPECIAL, after[end]))
+	while (after[end] && !ft_strchr(SPECIAL, after[end]) && after[end] != '?')
+		end++;
+	if (after[end] == '?')
 		end++;
 	if (end == 1)
 		return;
@@ -137,7 +140,7 @@ void try_expand_variable(char **str, t_shellzin *shell)
 	{
 		var = shellzin_env_search(shell, s);
 		if (var)
-			var = ft_strdup(var + 1);
+			var = ft_strdup(var);
 	}
 	free(s);
 	if (!var)
@@ -155,7 +158,7 @@ void try_expand_variable(char **str, t_shellzin *shell)
 	try_expand_variable(str, shell);
 }
 
-char *collect_next_substring(char *str, size_t *start, size_t size, bool *expand)
+static char *collect_next_substring(char *str, size_t *start, size_t size, bool *expand)
 {
 	char		quote;
 	size_t	st;
@@ -181,29 +184,35 @@ char *collect_next_substring(char *str, size_t *start, size_t size, bool *expand
 	return (ret);
 }
 
-void string_try_expand(char **str, size_t size, t_shellzin *shell)
+static bool	string_try_expand(char **str, size_t size, t_shellzin *shell)
 {
 	size_t	start;
 	char		*curr;
 	char		*joined;
 	bool		should_expand;
+	bool		expanded;
 
 	start = 0;
 	joined = NULL;
 	should_expand = false;
+	expanded = false;
 	while (start < size)
 	{
 		curr = collect_next_substring(*str, &start, size, &should_expand);
 		if (should_expand)
+		{
+			expanded = true;
 			try_expand_variable(&curr, shell);
+		}
 		joined = ft_strjoin(joined, curr);
 		free(curr);
 	}
 	free(*str);
 	*str = joined;
+	return (expanded);
 }
 
-t_ast *parse_word(t_parser *parser, t_shellzin *shell)
+static t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 {
 	t_ast					*word_node;
 	t_token				token;
@@ -217,12 +226,13 @@ t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 		return (NULL);
 	token = parser_consume(parser);
 	word_node = ast_init(AstKind_Word);
-	string_try_expand(&token.content, token.end-token.start, shell);
+	word_node->u_node.word_node.is_expanded = string_try_expand(&token.content, token.end-token.start, shell);
 	word_node->u_node.word_node.content = token.content;
+	word_node->u_node.word_node.is_string = kind == TokenKind_StringLiteral;
 	return (word_node);
 }
 
-t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
+static t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
 {
 	t_ast	*list_node;
 	t_ast	*word_node;
@@ -230,6 +240,14 @@ t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
 	if (parser->has_error)
 		return (NULL);
 	word_node = parse_word(parser, shell);
+	while (word_node &&
+		word_node->u_node.word_node.content[0] == '\0'
+		&& word_node->u_node.word_node.is_expanded)
+	{
+		free(word_node->u_node.word_node.content);
+		free(word_node);
+		word_node = parse_word(parser, shell);
+	}
 	if (!word_node)
 		return (NULL);
 	list_node = ast_init(AstKind_List);
@@ -240,7 +258,7 @@ t_ast *parse_word_list(t_parser *parser, t_shellzin *shell)
 	return (list_node);
 }
 
-t_ast *ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
+static t_ast *ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
 {
 	t_ast	*redirect_node;
 
@@ -252,7 +270,7 @@ t_ast *ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
 	return (redirect_node);
 }
 
-t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
+static t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 {
 	t_ast					*node;
 	t_ast					*right;
@@ -280,7 +298,7 @@ t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 	return (node);
 }
 
-t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
+static t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
 {
 	t_ast	*pipe_node;
 	t_ast	*node;
@@ -310,7 +328,7 @@ t_ast *parse_pipe(t_parser *parser, t_shellzin *shell)
 	return (node);
 }
 
-void print_indent(int lv)
+static void print_indent(int lv)
 {
 	int n;
 

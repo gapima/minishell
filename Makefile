@@ -11,7 +11,8 @@ LIBFT = ./libft
 HEADERS = -I $(INC)
 LIBS = ./libft/libft.a
 
-FILES = src/main.c src/utils.c src/lexer.c src/lexer_utils.c src/shellzin.c src/parser.c src/ast.c src/list_utils.c
+FILES = src/builtin/export.c src/builtin/echo.c src/builtin/pwd.c src/builtin/exit.c src/builtin/env.c src/builtin/unset.c src/builtin/cd.c src/builtin/run.c \
+				src/main.c src/utils.c src/lexer.c src/lexer_utils.c src/shellzin.c src/parser.c src/ast.c src/list_utils.c
 
 
 all: $(NAME)

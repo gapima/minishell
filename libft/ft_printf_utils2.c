@@ -21,7 +21,7 @@ static void	ft_write_str(char *s, const char *base, size_t len, long nbr)
 	}
 }
 
-size_t	ft_itoa_base(long nbr, const char *base)
+size_t	ft_itoa_base(long nbr, const char *base, int fd)
 {
 	long	nbr_l;
 	char	*tab;
@@ -45,19 +45,19 @@ size_t	ft_itoa_base(long nbr, const char *base)
 		return (0);
 	tab[len] = '\0';
 	ft_write_str(tab, base, len, nbr);
-	lenc = ft_putstr(tab);
+	lenc = ft_putstr_fd(tab, fd);
 	free(tab);
 	return (lenc);
 }
 
-int	ft_print_point(long nbr, const char *base)
+int	ft_print_point(long nbr, const char *base, int fd)
 {
 	int	count;
 
 	count = 0;
 	if (nbr == 0)
 		return (ft_putstr("(nil)"));
-	count += write(1, "0x", 2);
-	count += ft_itoa_base(nbr, base);
+	count += write(fd, "0x", 2);
+	count += ft_itoa_base(nbr, base, fd);
 	return (count);
 }

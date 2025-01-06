@@ -1,6 +1,5 @@
 #include "../include/minishell.h"
 #include <fcntl.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 t_ast *ast_init(e_ast_kind kind) {
@@ -59,7 +58,7 @@ int wait_children(pid_t pid)
 	return (status);
 }
 
-int stat_cmd(char *cmd)
+static int stat_path(char *cmd, bool is_cmd)
 {
 	struct stat	st;
 	int					status;
@@ -68,13 +67,34 @@ int stat_cmd(char *cmd)
 	status = 127;
 	if (errno == EACCES)
 	{
-		ft_printf("shellzin: `%s` Permission denied\n", cmd);
-		status = 126;
+		if (S_ISREG(st.st_mode))
+			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
+			{
+				ft_printf_fd(2, "shellzin: `%s` Permission denied\n", cmd);
+				status = 126;
+			}
+			else
+				ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
+		else
+		{
+			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
+			{
+				ft_printf_fd(2, "shellzin: `%s` Is a directory\n", cmd);
+				status = 126;
+			}
+			else
+				ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
+		}
 	}
 	else if (errno == ENOENT)
-		ft_printf("shellzin: Command not found `%s`\n", cmd);
+	{
+		if (is_cmd)
+			ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
+		else
+			ft_printf_fd(2, "shellzin: No such file or directory `%s`\n", cmd);
+	}
 	else
-		ft_printf("shellzin: Error\n");
+		ft_printf_fd(2, "shellzin: Error\n");
 	return (status);
 }
 
@@ -90,7 +110,7 @@ int command_spawn(char **argv, char **env, t_shellzin *shell)
 	{
 		signal(SIGQUIT, SIG_DFL);
 		execve(argv[0], argv, env);
-		status = stat_cmd(argv[0]);
+		status = stat_path(argv[0], true);
 		free(argv);
 		free(env);
 		ast_deinit(shell->ast);
@@ -109,17 +129,22 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 	char	*cmd;
 	int		status;
 
+	if (shell->stop_evaluation)
+		return ;
 	env = join_string_list(shell->env);
 	argv = join_word_list(ast->u_node.list_node.list);
 	if (argv[0])
 	{
-		cmd = search_path(shell, argv[0]);
-		if (cmd)
-			argv[0] = cmd;
-		status = command_spawn(argv, env, shell);
-		if (status != -1)
-			shell->last_status = status;
-		free(cmd);
+		if (!shellzin_try_run_builtin(argv, shell))
+		{
+			cmd = search_path(shell, argv[0]);
+			if (cmd)
+				argv[0] = cmd;
+			status = command_spawn(argv, env, shell);
+			if (status != -1)
+				shell->last_status = status;
+			free(cmd);
+		}
 	}
 	free(env);
 	free(argv);
@@ -167,55 +192,75 @@ t_ast *redirection_get_command_node(t_ast *ast)
 	return (ast);
 }
 
-int open_safe(char *path, int flags, int bflags)
+int open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 {
-	int fd;
-
-	fd = open(path, flags, bflags);
-	shellzin_assert(fd != -1, "todo");
-	return (fd);
+	*fd = open(path, flags, bflags);
+	if (*fd == -1)
+	{
+		stat_path(path, false);
+		return (1);
+	}
+	if (dup2(*fd, d) == -1)
+		return (1);
+	close(*fd);
+	return (0);
 }
 
-void redirection_prepare(t_ast *ast)
+void redirection_handle_heredoc(t_ast *ast, t_shellzin *shell)
+{
+	(void)ast;
+	(void)shell;
+	shellzin_assert(0, "heredoc not implemented");
+}
+
+int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 {
 	t_ast *right;
+	char	*path;
+	int		*fd;
 
+	if (shell->stop_evaluation)
+		return (1);
 	if (ast->u_node.redirect_node.left->kind == AstKind_Redirect)
-		redirection_prepare(ast->u_node.redirect_node.left);
+		if (redirection_prepare(ast->u_node.redirect_node.left, shell) != 0)
+			return (1);
 	right = ast->u_node.redirect_node.right->u_node.list_node.list->content;
+	path = right->u_node.word_node.content;
+	fd = &ast->u_node.redirect_node.fd;
+	if (ast->u_node.redirect_node.left->u_node.redirect_node.fd == -1)
+		return (1);
 	if (ast->u_node.redirect_node.kind == TokenKind_LArrow)
-	{
-		ast->u_node.redirect_node.fd = open_safe(right->u_node.word_node.content, O_RDONLY, 0666);
-		dup2(ast->u_node.redirect_node.fd, STDIN_FILENO);
-		close(ast->u_node.redirect_node.fd);
-	}
+		return (open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_RArrow)
-	{
-		ast->u_node.redirect_node.fd = open_safe(right->u_node.word_node.content, O_CREAT|O_TRUNC|O_WRONLY, 0666);
-		dup2(ast->u_node.redirect_node.fd, STDOUT_FILENO);
-		close(ast->u_node.redirect_node.fd);
-	}
+		return (open_dup2_close(path, O_CREAT|O_TRUNC|O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DRArrow)
-	{
-		ast->u_node.redirect_node.fd = open_safe(right->u_node.word_node.content, O_CREAT|O_APPEND|O_WRONLY, 0666);
-		dup2(ast->u_node.redirect_node.fd, STDOUT_FILENO);
-		close(ast->u_node.redirect_node.fd);
-	}
+		return (open_dup2_close(path, O_CREAT|O_APPEND|O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DLArrow)
-		shellzin_assert(0, "heredoc not implemented");
+		redirection_handle_heredoc(ast, shell);
+	return (1);
 }
 
 void redirect_evaluate(t_shellzin *shell, t_ast *ast)
 {
 	t_ast *command_node;
+	int		status;
 	int		restore[2];
 
+	if (shell->stop_evaluation)
+		return ;
 	command_node = redirection_get_command_node(ast);
 	redirection_trim_path(ast, command_node);
 	restore[0] = dup(STDIN_FILENO);
 	restore[1] = dup(STDOUT_FILENO);
 	if (ast->u_node.redirect_node.fd == 0)
-		redirection_prepare(ast);
+	{
+		status = redirection_prepare(ast, shell);
+		if (status != 0)
+		{
+			shell->stop_evaluation = true;
+			shell->last_status = 1;
+		}
+	}
 	ast_evaluate(shell, ast->u_node.redirect_node.left);
 	dup2(restore[0], STDIN_FILENO);
 	dup2(restore[1], STDOUT_FILENO);
@@ -229,16 +274,18 @@ void pipe_evaluate(t_shellzin *shell, t_ast *ast)
 	int		restore;
 	int		pipes[2];
 
+	if (shell->stop_evaluation)
+		return ;
 	if (pipe(pipes) == -1)
 	{
-		printf("shellzin: pipe: Unexpected error\n");
+		ft_printf_fd(2, "shellzin: pipe: Unexpected error\n");
 		shell->last_status = 1;
 		return ;
 	}
 	pid = fork();
 	if (pid == -1)
 	{
-		printf("shellzin: pipe: Unexpected error\n");
+		ft_printf_fd(2, "shellzin: pipe: Unexpected error\n");
 		shell->last_status = 1;
 		return ;
 	}

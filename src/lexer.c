@@ -69,7 +69,6 @@ void lexer_consume_string_literal(char c, t_lexer *lexer, t_token *token)
 {
 	lexer_consume_specific(lexer, c);
 	token->kind = TokenKind_StringLiteral;
-
 	lexer_consume_until(lexer, c);
 	if (!lexer_consume_specific(lexer, c)) {
 		token->kind = TokenKind_Error;

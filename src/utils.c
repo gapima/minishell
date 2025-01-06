@@ -35,6 +35,7 @@ void ft_lst_destroy(t_list *list)
 	while (head)
 	{
 		next = head->next;
+		free(head->content);
 		free(head);
 		head = next;
 	}
@@ -109,3 +110,16 @@ char *search_path(t_shellzin *shell, char *str)
 	string_list_destroy(split);
 	return (ret);
 }
+
+int	is_regular_file(const char *path)
+{
+	struct stat path_stat;
+
+	stat(path, &path_stat);
+	if (errno == ENOENT)
+		return (-1);
+	else if (errno == EACCES)
+		return (-2);
+	return (S_ISREG(path_stat.st_mode));
+}
+

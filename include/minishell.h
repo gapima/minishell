@@ -25,9 +25,13 @@
 # include <errno.h>
 # include <sys/types.h>
 # include <sys/stat.h>
+# include <fcntl.h>
+# include <stdlib.h>
 
 # define BLANKS " \t\v\f\n\v\f\r"
 # define SPECIAL " \v\f\n\v\f\r\t<>|\'\""
+
+extern volatile int g_last_signal;
 
 typedef enum	e_token_kind
 {
@@ -100,7 +104,9 @@ typedef struct e_ast t_ast;
 
 typedef struct e_ast_word
 {
-	char *content;
+	char	*content;
+	bool	is_expanded;
+	bool	is_string;
 } t_ast_word;
 
 typedef struct e_ast_list
@@ -141,7 +147,11 @@ typedef struct s_shellzin
 	t_lexer lexer;
 	t_parser parser;
 	t_ast *ast;
+	bool stop_evaluation;
+	char	cwd[PATH_MAX];
 }	t_shellzin;
+
+int		is_regular_file(const char *path);
 
 void	ast_print_state(t_ast *ast, int lv);
 void	ast_deinit(t_ast *ast);
@@ -155,8 +165,10 @@ void	shellzin_init(t_shellzin *shell, char *envp[]);
 void	shellzin_deinit(t_shellzin *shell);
 void	shellzin_assert(bool cond, char *msg);
 char	*shellzin_env_search(t_shellzin *shell, const char *key);
+t_list	*shellzin_env_search_node(t_shellzin *shell, const char *key, t_list **p_ptr, bool r_prev);
 
 int		ft_min(int a, int b);
+int		ft_max(int a, int b);
 void	ft_lst_destroy(t_list *list);
 void *ft_realloc(void *m, size_t prev_size, size_t new_size);
 
@@ -165,4 +177,14 @@ char	**join_string_list(t_list *list);
 char	**join_word_list(t_list *list);
 char	*search_path(t_shellzin *shell, char *str);
 
+bool	shellzin_set_or_change_env(t_shellzin *shell, char *key, char *value);
+bool	shellzin_try_run_builtin(char **argv, t_shellzin *shell);
+void	shellzin_cd(char **argv, t_shellzin *shell);
+void	shellzin_env(char **argv, t_shellzin *shell);
+void	shellzin_unset(char **argv, t_shellzin *shell);
+void	shellzin_pwd(char **argv, t_shellzin *shell);
+void	shellzin_echo(char **argv, t_shellzin *shell);
+void	shellzin_export(char **argv, t_shellzin *shell);
+void	shellzin_exit(char **argv, t_shellzin *shell);
+bool	shellzin_redisplay(bool v, int s);
 #endif
