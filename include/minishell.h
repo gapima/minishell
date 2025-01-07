@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 18:37:49 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/07 19:46:56 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,10 @@
 
 # define BLANKS " \t\v\f\n\v\f\r"
 # define SPECIAL " \v\f\n\v\f\r\t<>|\'\""
-/*# define PATH_SPECIAL " \v\f\n\v\f\r\t<>|\'\"/\\:.-"*/
 
-extern volatile int g_last_signal;
+extern volatile int	g_last_signal;
 
-typedef enum	e_token_kind
+typedef enum e_token_kind
 {
 	TokenKind_Eof,
 	TokenKind_Word,
@@ -45,25 +44,25 @@ typedef enum	e_token_kind
 	TokenKind_DLArrow,
 	TokenKind_DRArrow,
 	TokenKind_Pipe
-} e_token_kind;
+}	e_token_kind;
 
 typedef struct s_token
 {
-	e_token_kind kind;
-	char	*content;
-	size_t start;
-	size_t end;
+	e_token_kind	kind;
+	char			*content;
+	size_t			start;
+	size_t			end;
 }	t_token;
 
 typedef struct s_lexer
 {
 	size_t	cursor;
 	size_t	size;
-	char		*content;
+	char	*content;
 }	t_lexer;
 
-t_lexer	lexer_init(char *str);
-t_token	lexer_next(t_lexer *lexer);
+t_lexer		lexer_init(char *str);
+t_token		lexer_next(t_lexer *lexer);
 void		lexer_print_state(t_lexer *lexer);
 bool		lexer_iseof(t_lexer *lexer);
 char		lexer_peek(t_lexer *lexer);
@@ -76,22 +75,22 @@ typedef struct s_parser
 {
 	t_lexer *lexer;
 	t_token *tokens;
-	size_t size;
-	size_t cursor;
-	bool has_error;
-	char *error_msg;
-	bool error_from_lexer;
-	bool should_expand;
-} t_parser;
+	size_t 	size;
+	size_t 	cursor;
+	bool 	has_error;
+	char 	*error_msg;
+	bool 	error_from_lexer;
+	bool 	should_expand;
+}	t_parser;
 
 t_parser	parser_init(t_lexer *lexer);
-void			parser_deinit(t_parser *parser);
-void			parser_batch_tokens(t_parser *parser);
-bool			parser_iseof(t_parser *parser);
-void			parser_free_token_list(t_parser *parser);
+void		parser_deinit(t_parser *parser);
+void		parser_batch_tokens(t_parser *parser);
+bool		parser_iseof(t_parser *parser);
+void		parser_free_token_list(t_parser *parser);
 t_token		parser_peek(t_parser *parser);
 t_token		parser_peek_last(t_parser *parser);
-void			parser_set_error(t_parser *parser, char *msg);
+void		parser_set_error(t_parser *parser, char *msg);
 
 typedef enum e_ast_kind
 {
@@ -100,40 +99,40 @@ typedef enum e_ast_kind
 	AstKind_Word,
 	AstKind_Redirect,
 	AstKind_Pipe,
-} e_ast_kind;
+}	e_ast_kind;
 
-typedef struct e_ast t_ast;
+typedef struct	e_ast t_ast;
 
 typedef struct e_ast_word
 {
 	char	*content;
 	bool	is_expanded;
 	bool	is_string;
-} t_ast_word;
+}	t_ast_word;
 
 typedef struct e_ast_list
 {
-	t_list *list;
-} t_ast_list;
+	t_list	*list;
+}	t_ast_list;
 
 typedef struct e_ast_redirect
 {
-	t_ast *left;
-	t_ast *right;
-	e_token_kind kind;
-	int	fd;
-} t_ast_redirect;
+	t_ast			*left;
+	t_ast			*right;
+	e_token_kind	kind;
+	int				fd;
+}	t_ast_redirect;
 
 typedef struct e_ast_pipe
 {
-	t_ast *left;
-	t_ast *right;
-} t_ast_pipe;
+	t_ast	*left;
+	t_ast	*right;
+}	t_ast_pipe;
 
 struct e_ast 
 {
-	e_ast_kind kind;
-	bool is_error;
+	e_ast_kind	kind;
+	bool		is_error;
 	union {
 		t_ast_word word_node;
 		t_ast_redirect redirect_node;
@@ -144,24 +143,23 @@ struct e_ast
 
 typedef struct s_shellzin
 {
-	int last_status;
-	t_list	*env;
-	t_lexer lexer;
-	t_parser parser;
-	t_ast *ast;
-	bool stop_evaluation;
-	char	cwd[PATH_MAX];
-
+	int			last_status;
+	t_list		*env;
+	t_lexer		lexer;
+	t_parser	parser;
+	t_ast		*ast;
+	bool		stop_evaluation;
+	char		cwd[PATH_MAX];
 }	t_shellzin;
 
 int		is_regular_file(const char *path);
 
 void	ast_print_state(t_ast *ast, int lv);
 void	ast_deinit(t_ast *ast);
-t_ast *ast_init(e_ast_kind kind);
-void ast_evaluate(t_shellzin *shell, t_ast *ast);
+t_ast	*ast_init(e_ast_kind kind);
+void	ast_evaluate(t_shellzin *shell, t_ast *ast);
 
-t_ast *parse(char *line, t_shellzin *shell);
+t_ast	*parse(char *line, t_shellzin *shell);
 
 void	shellzin_handle_sigint(int sig);
 void	shellzin_init(t_shellzin *shell, char *envp[]);
@@ -173,7 +171,7 @@ t_list	*shellzin_env_search_node(t_shellzin *shell, const char *key, t_list **p_
 int		ft_min(int a, int b);
 int		ft_max(int a, int b);
 void	ft_lst_destroy(t_list *list);
-void *ft_realloc(void *m, size_t prev_size, size_t new_size);
+void	*ft_realloc(void *m, size_t prev_size, size_t new_size);
 
 void	string_list_destroy(char **list);
 char	**join_string_list(t_list *list);
