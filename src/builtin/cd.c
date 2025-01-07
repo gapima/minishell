@@ -1,20 +1,32 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cd.c                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/07 19:54:27 by glima             #+#    #+#             */
+/*   Updated: 2025/01/07 19:55:16 by glima            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-void cd_not_directory(char *path)
+void	cd_not_directory(char *path)
 {
 	ft_putstr_fd("shellzin: cd: ", 2);
 	ft_putstr_fd(path, 2);
 	ft_putendl_fd(": Not a directory", 2);
 }
 
-void cd_not_found(char *path)
+void	cd_not_found(char *path)
 {
 	ft_putstr_fd("shellzin: cd: ", 2);
 	ft_putstr_fd(path, 2);
 	ft_putendl_fd(": No such file or directory", 2);
 }
 
-void cd_permission_denied(char *path)
+void	cd_permission_denied(char *path)
 {
 	ft_putstr_fd("shellzin: cd: ", 2);
 	ft_putstr_fd(path, 2);
@@ -39,7 +51,7 @@ char	*cd_check_path(char *path)
 	return (dir);
 }
 
-void shellzin_cd(char **argv, t_shellzin *shell)
+void	shellzin_cd(char **argv, t_shellzin *shell)
 {
 	char	*home;
 	char	*dir;
@@ -57,7 +69,7 @@ void shellzin_cd(char **argv, t_shellzin *shell)
 	if (argv[1] == NULL)
 		dir = home;
 	else
-		dir = cd_check_path(argv[1]); 
+		dir = cd_check_path(argv[1]);
 	if (dir && chdir(dir) == 0)
 	{
 		getcwd(shell->cwd, PATH_MAX);

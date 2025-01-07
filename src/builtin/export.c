@@ -1,9 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   export.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/07 19:49:47 by glima             #+#    #+#             */
+/*   Updated: 2025/01/07 19:54:11 by glima            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-bool shellzin_export_is_valid(char *test)
+bool	shellzin_export_is_valid(char *test)
 {
 	size_t	idx;
-	bool		r;
+	bool	r;
 
 	if (!test)
 		return (false);
@@ -11,29 +23,29 @@ bool shellzin_export_is_valid(char *test)
 	idx = 0;
 	while (test[idx])
 	{
-		if (ft_strchr(SPECIAL, test[idx]) != NULL ||
-			(!ft_isalnum(test[idx]) && test[idx] != '_'))
+		if (ft_strchr(SPECIAL, test[idx]) != NULL \
+		|| (!ft_isalnum(test[idx]) && test[idx] != '_'))
 		{
 			r = false;
-			break;
+			break ;
 		}
 		idx++;
 	}
 	return (r);
 }
 
-void swap(char **a, char **b)
+void	swap(char **a, char **b)
 {
-	char *tmp;
+	char	*tmp;
 
 	tmp = *a;
 	*a = *b;
 	*b = tmp;
 }
 
-void sort_tab(char **tab, int sz)
+void	sort_tab(char **tab, int sz)
 {
-	int	idx;
+	int		idx;
 	bool	sw;
 
 	sw = true;
@@ -42,9 +54,8 @@ void sort_tab(char **tab, int sz)
 		idx = -1;
 		sw = false;
 		while (++idx < sz - 1)
-			if (ft_strncmp(tab[idx], tab[idx + 1],
-								ft_max(ft_strlen(tab[idx]),
-								ft_strlen(tab[idx+1]))) > 0)
+			if (ft_strncmp(tab[idx], tab[idx + 1], \
+			ft_max(ft_strlen(tab[idx]), ft_strlen(tab[idx + 1]))) > 0)
 			{
 				swap(&tab[idx], &tab[idx + 1]);
 				sw = true;
@@ -52,11 +63,12 @@ void sort_tab(char **tab, int sz)
 		sz--;
 	}
 }
-void shellzin_export_print(t_shellzin *shell)
+
+void	shellzin_export_print(t_shellzin *shell)
 {
 	t_list	*node;
-	char		**tab;
-	int			idx;
+	char	**tab;
+	int		idx;
 
 	tab = ft_calloc(sizeof(char *), ft_lstsize(shell->env) + 1);
 	if (!tab)
@@ -75,10 +87,10 @@ void shellzin_export_print(t_shellzin *shell)
 	free(tab);
 }
 
-void shellzin_export(char **argv, t_shellzin *shell)
+void	shellzin_export(char **argv, t_shellzin *shell)
 {
 	size_t	idx;
-	char		**split;
+	char	**split;
 
 	if (argv[1] == NULL)
 		shellzin_export_print(shell);
@@ -91,21 +103,21 @@ void shellzin_export(char **argv, t_shellzin *shell)
 			split = ft_split(argv[idx], '=');
 			if (split[0] == NULL)
 			{
-				ft_printf_fd(2, "shellzin: export: `=` not a valid identifier\n");
+				ft_printf_fd(2, "shellzin: \
+				export: `=` not a valid identifier\n");
 				shell->last_status = 1;
 				string_list_destroy(split);
-				continue;
+				continue ;
 			}
 			if (split[0] != NULL && split[1] != NULL)
 			{
-				if (shellzin_export_is_valid(split[0]) &&
-						!ft_isdigit(split[0][0]))
-				{
+				if (shellzin_export_is_valid(split[0]) \
+				&& !ft_isdigit(split[0][0]))
 					shellzin_set_or_change_env(shell, split[0], (split[1]));
-				}
 				else
 				{
-					ft_printf_fd(2, "shellzin: export: %s=%s not a valid identifier\n", split[0], split[1]);
+					ft_printf_fd(2, "shellzin: export: \
+					%s=%s not a valid identifier\n", split[0], split[1]);
 					shell->last_status = 1;
 				}
 			}
@@ -113,9 +125,11 @@ void shellzin_export(char **argv, t_shellzin *shell)
 		}
 		else
 		{
-			if (!shellzin_export_is_valid(argv[idx]) || ft_isdigit(argv[idx][0]))
+			if (!shellzin_export_is_valid(argv[idx]) \
+			|| ft_isdigit(argv[idx][0]))
 			{
-				ft_printf_fd(2, "shellzin: export: %s not a valid identifier\n", argv[idx]);
+				ft_printf_fd(2, "shellzin: export: \
+				%s not a valid identifier\n", argv[idx]);
 				shell->last_status = 1;
 			}
 			else if (argv[idx][0] == '\0')

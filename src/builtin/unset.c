@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   unset.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/07 19:57:36 by glima             #+#    #+#             */
+/*   Updated: 2025/01/07 19:58:03 by glima            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-void shellzin_unset(char **argv, t_shellzin *shell)
+void	shellzin_unset(char **argv, t_shellzin *shell)
 {
-	size_t idx;
-	t_list *node;
-	t_list *prev;
+	size_t	idx;
+	t_list	*node;
+	t_list	*prev;
 
 	idx = 1;
 	prev = NULL;
