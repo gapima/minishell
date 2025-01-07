@@ -151,6 +151,7 @@ typedef struct s_shellzin
 	t_ast *ast;
 	bool stop_evaluation;
 	char	cwd[PATH_MAX];
+
 }	t_shellzin;
 
 int		is_regular_file(const char *path);
@@ -188,5 +189,10 @@ void	shellzin_pwd(char **argv, t_shellzin *shell);
 void	shellzin_echo(char **argv, t_shellzin *shell);
 void	shellzin_export(char **argv, t_shellzin *shell);
 void	shellzin_exit(char **argv, t_shellzin *shell);
+
+bool	string_try_expand(char **str, size_t size, t_shellzin *shell);
+void	shellzin_heredoc(t_ast *ast, t_shellzin *shell);
+
 bool	shellzin_redisplay(bool v, int s);
+bool	shellzin_is_heredoc(bool v, int s);
 #endif

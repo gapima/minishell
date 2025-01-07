@@ -187,7 +187,7 @@ static char *collect_next_substring(char *str, size_t *start, size_t size, bool 
 	return (ret);
 }
 
-static bool	string_try_expand(char **str, size_t size, t_shellzin *shell)
+bool	string_try_expand(char **str, size_t size, t_shellzin *shell)
 {
 	size_t	start;
 	char		*curr;
@@ -233,6 +233,7 @@ static t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 		word_node->u_node.word_node.is_expanded = string_try_expand(&token.content, token.end-token.start, shell);
 	word_node->u_node.word_node.content = token.content;
 	word_node->u_node.word_node.is_string = kind == TokenKind_StringLiteral;
+	parser->should_expand = true;
 	return (word_node);
 }
 
@@ -376,9 +377,13 @@ void ast_print_state(t_ast *ast, int lv) {
 }
 
 t_ast *parse(char *line, t_shellzin *shell) {
+	t_ast	*ast;
 	shell->lexer = lexer_init(line);
 	shell->parser = parser_init(&shell->lexer);
 
 	parser_batch_tokens(&shell->parser);
-	return (parse_pipe(&shell->parser, shell));
+	shell->stop_evaluation = false;
+	ast = parse_pipe(&shell->parser, shell);
+	shellzin_heredoc(ast, shell);
+	return (ast);
 }

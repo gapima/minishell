@@ -35,7 +35,6 @@ void	shellzin_evaluate(char *line, t_shellzin *shell)
 	else if (ast)
 	{
 		shell->ast = ast;
-		shell->stop_evaluation = false;
 		ast_evaluate(shell, ast);
 	}
 	parser_deinit(&shell->parser);
@@ -128,6 +127,8 @@ int	main(int ac, char *av[], char *envp[])
 	/*shellzin_evaluate("export =", &shell);*/
 	/*shellzin_evaluate("echo $?HELLO", &shell);*/
 	/*shellzin_evaluate("exit", &shell);*/
+	/*shellzin_evaluate("cat -e << EOF | grep line", &shell);*/
+	/*printf("%d\n", getpid());*/
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
 }

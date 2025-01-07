@@ -206,29 +206,12 @@ int open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 	return (0);
 }
 
-void redirection_handle_heredoc(t_ast *ast, t_shellzin *shell)
-{
-	(void)shell;
-	(void)ast;
-	/*t_list	*node;*/
-	/**/
-	/*(void)shell;*/
-	/*node = ast->u_node.redirect_node.right->u_node.list_node.list;*/
-	/*printf("%d\n", ft_lstsize(node));*/
-	/*while (node)*/
-	/*{*/
-	/*	t_ast *content = node->content;*/
-	/*	printf("str: %s\n", content->u_node.word_node.content); */
-	/*	node = node->next;*/
-	/*}*/
-	shellzin_assert(0, "heredoc not implemented");
-}
-
 int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 {
 	t_ast *right;
 	char	*path;
 	int		*fd;
+	int		ret;
 
 	if (shell->stop_evaluation)
 		return (1);
@@ -247,7 +230,11 @@ int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 	else if (ast->u_node.redirect_node.kind == TokenKind_DRArrow)
 		return (open_dup2_close(path, O_CREAT|O_APPEND|O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DLArrow)
-		redirection_handle_heredoc(ast, shell);
+	{
+		ret = open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd);
+		unlink(path);
+		return (ret);
+	}
 	return (1);
 }
 
@@ -330,4 +317,3 @@ void ast_evaluate(t_shellzin *shell, t_ast *ast)
 	else if (ast->kind == AstKind_Pipe)
 		pipe_evaluate(shell, ast);
 }
-

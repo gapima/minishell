@@ -15,6 +15,8 @@
 void	shellzin_handle_sigint(int sig)
 {
 	g_last_signal = sig;
+	if (shellzin_is_heredoc(0, 0))
+		close(STDIN_FILENO);
 	rl_replace_line("", 0);
 	rl_on_new_line();
 	ft_putstr("\n");
@@ -103,6 +105,16 @@ bool	shellzin_redisplay(bool v, int s)
 		return (redisplay);
 	redisplay = v;
 	return (redisplay);
+}
+
+bool	shellzin_is_heredoc(bool v, int s)
+{
+	static bool	heredoc;
+
+	if (s == 0)
+		return (heredoc);
+	heredoc = v;
+	return (heredoc);
 }
 
 void shellzin_assert(bool cond, char *msg)
