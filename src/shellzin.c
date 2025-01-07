@@ -91,6 +91,7 @@ char	*shellzin_env_search(t_shellzin *shell, const char *key)
 
 void	shellzin_deinit(t_shellzin *shell)
 {
+	rl_clear_history();
 	ft_lst_destroy(shell->env);
 }
 

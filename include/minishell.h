@@ -30,6 +30,7 @@
 
 # define BLANKS " \t\v\f\n\v\f\r"
 # define SPECIAL " \v\f\n\v\f\r\t<>|\'\""
+/*# define PATH_SPECIAL " \v\f\n\v\f\r\t<>|\'\"/\\:.-"*/
 
 extern volatile int g_last_signal;
 
@@ -80,6 +81,7 @@ typedef struct s_parser
 	bool has_error;
 	char *error_msg;
 	bool error_from_lexer;
+	bool should_expand;
 } t_parser;
 
 t_parser	parser_init(t_lexer *lexer);

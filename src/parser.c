@@ -11,12 +11,12 @@ t_parser parser_init(t_lexer *lexer)
 	parser.has_error = false;
 	parser.error_msg = NULL;
 	parser.error_from_lexer = false;
+	parser.should_expand = true;
 	return (parser);
 }
 
 void parser_deinit(t_parser *parser)
 {
-	rl_clear_history();
 	free(parser->tokens);
 }
 
@@ -125,9 +125,12 @@ static void try_expand_variable(char **str, t_shellzin *shell)
 		return;
 	start = after - (*str);
 	end = 1;
-	while (after[end] && !ft_strchr(SPECIAL, after[end]) && after[end] != '?')
+	while (after[end] &&
+		!ft_strchr(SPECIAL, after[end]) &&
+		(ft_isalnum(after[end]) || after[end] == '_'))
 		end++;
-	if (after[end] == '?')
+	if (after[1] == '?' ||
+		(after[1] == '_' && after[2] == 0))
 		end++;
 	if (end == 1)
 		return;
@@ -226,7 +229,8 @@ static t_ast *parse_word(t_parser *parser, t_shellzin *shell)
 		return (NULL);
 	token = parser_consume(parser);
 	word_node = ast_init(AstKind_Word);
-	word_node->u_node.word_node.is_expanded = string_try_expand(&token.content, token.end-token.start, shell);
+	if (parser->should_expand)
+		word_node->u_node.word_node.is_expanded = string_try_expand(&token.content, token.end-token.start, shell);
 	word_node->u_node.word_node.content = token.content;
 	word_node->u_node.word_node.is_string = kind == TokenKind_StringLiteral;
 	return (word_node);
@@ -285,6 +289,7 @@ static t_ast *parse_redirect(t_parser *parser, t_shellzin *shell)
 		kind = parser_peek(parser).kind;
 		if (!is_redirection_symbol(kind))
 			break;
+		parser->should_expand = (kind != TokenKind_DLArrow);
 		parser_consume(parser);
 		right = parse_word_list(parser, shell);
 		if (right == NULL)

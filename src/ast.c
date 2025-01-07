@@ -131,12 +131,12 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 
 	if (shell->stop_evaluation)
 		return ;
-	env = join_string_list(shell->env);
 	argv = join_word_list(ast->u_node.list_node.list);
 	if (argv[0])
 	{
 		if (!shellzin_try_run_builtin(argv, shell))
 		{
+			env = join_string_list(shell->env);
 			cmd = search_path(shell, argv[0]);
 			if (cmd)
 				argv[0] = cmd;
@@ -144,9 +144,9 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 			if (status != -1)
 				shell->last_status = status;
 			free(cmd);
+			free(env);
 		}
 	}
-	free(env);
 	free(argv);
 }
 
@@ -208,8 +208,19 @@ int open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 
 void redirection_handle_heredoc(t_ast *ast, t_shellzin *shell)
 {
-	(void)ast;
 	(void)shell;
+	(void)ast;
+	/*t_list	*node;*/
+	/**/
+	/*(void)shell;*/
+	/*node = ast->u_node.redirect_node.right->u_node.list_node.list;*/
+	/*printf("%d\n", ft_lstsize(node));*/
+	/*while (node)*/
+	/*{*/
+	/*	t_ast *content = node->content;*/
+	/*	printf("str: %s\n", content->u_node.word_node.content); */
+	/*	node = node->next;*/
+	/*}*/
 	shellzin_assert(0, "heredoc not implemented");
 }
 

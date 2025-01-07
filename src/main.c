@@ -127,6 +127,7 @@ int	main(int ac, char *av[], char *envp[])
 	/*shellzin_evaluate("echo '> >> < * ? [ ] | ; [ ] || && ( ) & # $  <<' | cat -e", &shell);*/
 	/*shellzin_evaluate("export =", &shell);*/
 	/*shellzin_evaluate("echo $?HELLO", &shell);*/
+	/*shellzin_evaluate("exit", &shell);*/
 	shellzin_repl(&shell);
 	shellzin_deinit(&shell);
 }

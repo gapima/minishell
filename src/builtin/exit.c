@@ -20,6 +20,7 @@ void	shellzin_exit(char **argv, t_shellzin *shell)
 			return ;
 		}
 	}
+	free(argv);
 	ast_deinit(shell->ast);
 	parser_deinit(&shell->parser);
 	shellzin_deinit(shell);
