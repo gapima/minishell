@@ -1,6 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ast.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/07 18:12:31 by glima             #+#    #+#             */
+/*   Updated: 2025/01/07 18:30:23 by glima            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../include/minishell.h"
 
-t_ast *ast_init(e_ast_kind kind) {
+t_ast	*ast_init(e_ast_kind kind)
+{
 	t_ast	*ast;
 
 	ast = ft_calloc(sizeof(t_ast), 1);
@@ -9,13 +22,15 @@ t_ast *ast_init(e_ast_kind kind) {
 	return (ast);
 }
 
-void ast_deinit(t_ast *ast) {
+void	ast_deinit(t_ast *ast)
+{
 	t_list	*head;
 	t_list	*next;
 
 	if (!ast)
 		return ;
-	if (ast->kind == AstKind_Word) {
+	if (ast->kind == AstKind_Word)
+	{
 		free(ast->u_node.word_node.content);
 		free(ast);
 	}
@@ -28,11 +43,12 @@ void ast_deinit(t_ast *ast) {
 	else if (ast->kind == AstKind_List)
 	{
 		head = ast->u_node.list_node.list;
-		while (head) {
+		while (head)
+		{
 			next = head->next;
 			ast_deinit((t_ast *)head->content);
 			free(head);
-			head = next; 
+			head = next;
 		}
 		free(ast);
 	}
@@ -44,9 +60,9 @@ void ast_deinit(t_ast *ast) {
 	}
 }
 
-int wait_children(pid_t pid)
+int	wait_children(pid_t pid)
 {
-	int status;
+	int	status;
 
 	waitpid(pid, &status, 0);
 	if (WIFSIGNALED(status))
@@ -56,16 +72,17 @@ int wait_children(pid_t pid)
 	return (status);
 }
 
-static int stat_path(char *cmd, bool is_cmd)
+static int	stat_path(char *cmd, bool is_cmd)
 {
 	struct stat	st;
-	int					status;
+	int			status;
 
 	stat(cmd, &st);
 	status = 127;
 	if (errno == EACCES)
 	{
 		if (S_ISREG(st.st_mode))
+		{
 			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
 			{
 				ft_printf_fd(2, "shellzin: `%s` Permission denied\n", cmd);
@@ -73,6 +90,7 @@ static int stat_path(char *cmd, bool is_cmd)
 			}
 			else
 				ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
+		}
 		else
 		{
 			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
@@ -96,11 +114,11 @@ static int stat_path(char *cmd, bool is_cmd)
 	return (status);
 }
 
-int command_spawn(char **argv, char **env, t_shellzin *shell)
+int	command_spawn(char **argv, char **env, t_shellzin *shell)
 {
-	pid_t pid;
-	int status;
-	
+	pid_t	pid;
+	int		status;
+
 	pid = fork();
 	if (pid == -1)
 		return (-1);
@@ -120,7 +138,7 @@ int command_spawn(char **argv, char **env, t_shellzin *shell)
 	return (status);
 }
 
-void list_evaluate(t_shellzin *shell, t_ast *ast)
+void	list_evaluate(t_shellzin *shell, t_ast *ast)
 {
 	char	**argv;
 	char	**env;
@@ -148,9 +166,9 @@ void list_evaluate(t_shellzin *shell, t_ast *ast)
 	free(argv);
 }
 
-t_ast *ast_word_node_init(char *content)
+t_ast	*ast_word_node_init(char *content)
 {
-	t_ast *node;
+	t_ast	*node;
 
 	node = ast_init(AstKind_Word);
 	node->u_node.word_node.content = ft_strdup(content);
@@ -158,12 +176,12 @@ t_ast *ast_word_node_init(char *content)
 	return (node);
 }
 
-void redirection_trim_path(t_ast *ast, t_ast *command_node)
+void	redirection_trim_path(t_ast *ast, t_ast *command_node)
 {
 	t_list	*word_list;
 	t_list	*next;
-	t_ast		*node;
-	char		*content;
+	t_ast	*node;
+	char	*content;
 
 	if (ast->u_node.redirect_node.left->kind == AstKind_Redirect)
 		redirection_trim_path(ast->u_node.redirect_node.left, command_node);
@@ -176,21 +194,19 @@ void redirection_trim_path(t_ast *ast, t_ast *command_node)
 		free(word_list->content);
 		next = word_list->next;
 		free(word_list);
-		word_list = next; 
+		word_list = next;
 	}
 	ast->u_node.redirect_node.right->u_node.list_node.list->next = NULL;
 }
 
-t_ast *redirection_get_command_node(t_ast *ast)
+t_ast	*redirection_get_command_node(t_ast *ast)
 {
 	if (ast->kind == AstKind_Redirect)
-	{
-		return redirection_get_command_node(ast->u_node.redirect_node.left);
-	}
+		return (redirection_get_command_node(ast->u_node.redirect_node.left));
 	return (ast);
 }
 
-int open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
+int	open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 {
 	*fd = open(path, flags, bflags);
 	if (*fd == -1)
@@ -206,7 +222,7 @@ int open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 
 int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 {
-	t_ast *right;
+	t_ast	*right;
 	char	*path;
 	int		*fd;
 	int		ret;
@@ -224,9 +240,11 @@ int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 	if (ast->u_node.redirect_node.kind == TokenKind_LArrow)
 		return (open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_RArrow)
-		return (open_dup2_close(path, O_CREAT|O_TRUNC|O_WRONLY, 0666, STDOUT_FILENO, fd));
+		return (open_dup2_close(path, O_CREAT | O_TRUNC \
+		| O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DRArrow)
-		return (open_dup2_close(path, O_CREAT|O_APPEND|O_WRONLY, 0666, STDOUT_FILENO, fd));
+		return (open_dup2_close(path, O_CREAT | O_APPEND \
+		| O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DLArrow)
 	{
 		ret = open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd);
@@ -236,9 +254,9 @@ int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 	return (1);
 }
 
-void redirect_evaluate(t_shellzin *shell, t_ast *ast)
+void	redirect_evaluate(t_shellzin *shell, t_ast *ast)
 {
-	t_ast *command_node;
+	t_ast	*command_node;
 	int		status;
 	int		restore[2];
 
@@ -264,7 +282,7 @@ void redirect_evaluate(t_shellzin *shell, t_ast *ast)
 	close(restore[1]);
 }
 
-void pipe_evaluate(t_shellzin *shell, t_ast *ast)
+void	pipe_evaluate(t_shellzin *shell, t_ast *ast)
 {
 	pid_t	pid;
 	int		restore;
@@ -306,7 +324,7 @@ void pipe_evaluate(t_shellzin *shell, t_ast *ast)
 	waitpid(pid, 0, 0);
 }
 
-void ast_evaluate(t_shellzin *shell, t_ast *ast)
+void	ast_evaluate(t_shellzin *shell, t_ast *ast)
 {
 	if (ast->kind == AstKind_List)
 		list_evaluate(shell, ast);
