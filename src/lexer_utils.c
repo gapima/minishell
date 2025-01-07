@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils_lexer.c                                      :+:      :+:    :+:   */
+/*   lexer_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 18:27:43 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 18:28:12 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/07 18:41:53 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../include/minishell.h"
+#include "../include/minishell.h"
 
 bool	lexer_iseof(t_lexer *lexer)
 {
@@ -44,17 +44,16 @@ char	lexer_consume(t_lexer *lexer)
 	return (curr);
 }
 
-void lexer_consume_until(t_lexer *lexer, char c) {
-	while (!lexer_iseof(lexer) && lexer_peek(lexer) != c) {
+void	lexer_consume_until(t_lexer *lexer, char c)
+{
+	while (!lexer_iseof(lexer) && lexer_peek(lexer) != c)
 		lexer_consume(lexer);
-	}
 }
 
 void	token_print_state(t_token token)
 {
-		printf("(%s)", get_token_symbol(token));
-		if (token.kind == TokenKind_Word || token.kind == TokenKind_StringLiteral)
-			printf(": %s", token.content);
-		printf("\n");
+	printf("(%s)", get_token_symbol(token));
+	if (token.kind == TokenKind_Word || token.kind == TokenKind_StringLiteral)
+		printf(": %s", token.content);
+	printf("\n");
 }
-
