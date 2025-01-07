@@ -1,6 +1,4 @@
 #include "../include/minishell.h"
-#include <fcntl.h>
-#include <unistd.h>
 
 t_ast *ast_init(e_ast_kind kind) {
 	t_ast	*ast;

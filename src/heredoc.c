@@ -1,6 +1,4 @@
 #include "../include/minishell.h"
-#include <readline/history.h>
-#include <unistd.h>
 
 unsigned int random_number()
 {
