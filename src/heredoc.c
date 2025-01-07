@@ -20,6 +20,7 @@ int heredoc_process_line(char *cmp, int heredoc_fd, int _stdin, bool *err, t_she
 		*err = true;
 	if (g_last_signal == SIGINT)
 	{
+		shell->last_status = 130;
 		dup2(_stdin, STDIN_FILENO);
 		free(line);
 		line = NULL;
