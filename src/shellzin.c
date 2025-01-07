@@ -6,11 +6,11 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 18:34:29 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 18:38:09 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/07 19:38:02 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../include/minishell.h"
+#include "../include/minishell.h"
 
 void	shellzin_handle_sigint(int sig)
 {
@@ -42,7 +42,7 @@ t_list	*shellzin_env_search_node(t_shellzin *shell, const char *key, t_list **p_
 	while (head)
 	{
 		if (ft_strncmp(key, head->content, ft_strlen(key)) == 0)
-			break;
+			break ;
 		prev = head;
 		head = head->next;
 	}
@@ -54,7 +54,7 @@ t_list	*shellzin_env_search_node(t_shellzin *shell, const char *key, t_list **p_
 bool	shellzin_set_or_change_env(t_shellzin *shell, char *key, char *value)
 {
 	t_list	*node;
-	char		*new;
+	char	*new;
 
 	new = ft_strjoin(ft_strdup(key), "=");
 	new = ft_strjoin(new, value);
@@ -71,8 +71,8 @@ bool	shellzin_set_or_change_env(t_shellzin *shell, char *key, char *value)
 
 char	*shellzin_env_search(t_shellzin *shell, const char *key)
 {
-	char		*ctt;
-	char		*env;
+	char	*ctt;
+	char	*env;
 	t_list	*head;
 
 	head = shell->env;
@@ -117,11 +117,11 @@ bool	shellzin_is_heredoc(bool v, int s)
 	return (heredoc);
 }
 
-void shellzin_assert(bool cond, char *msg)
+void	shellzin_assert(bool cond, char *msg)
 {
-	if (!cond) {
+	if (!cond)
+	{
 		ft_putendl_fd(msg, 2);
 		exit(1);
 	}
 }
-
