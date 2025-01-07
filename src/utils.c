@@ -6,11 +6,11 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 18:18:19 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 18:18:56 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/07 19:41:49 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../include/minishell.h"
+#include "../include/minishell.h"
 
 int	ft_min(int a, int b)
 {
@@ -26,12 +26,12 @@ int	ft_max(int a, int b)
 	return (b);
 }
 
-void ft_lst_destroy(t_list *list)
+void	ft_lst_destroy(t_list *list)
 {
 	t_list	*head;
 	t_list	*next;
 
-	head = list; 
+	head = list;
 	while (head)
 	{
 		next = head->next;
@@ -41,9 +41,9 @@ void ft_lst_destroy(t_list *list)
 	}
 }
 
-void *ft_realloc(void *m, size_t prev_size, size_t new_size)
+void	*ft_realloc(void *m, size_t prev_size, size_t new_size)
 {
-	void *ret;
+	void	*ret;
 
 	ret = NULL;
 	if (new_size < prev_size)
@@ -53,18 +53,17 @@ void *ft_realloc(void *m, size_t prev_size, size_t new_size)
 	}
 	ret = ft_calloc(new_size, 1);
 	shellzin_assert(ret != NULL, "(ft_realloc) could not allocate memory");
-	if (m != NULL) {
+	if (m != NULL)
 		ft_memcpy(ret, m, prev_size);
-	}
 	free(m);
 	return (ret);
 }
 
-char *search_directory(char *path, char *str)
+char	*search_directory(char *path, char *str)
 {
-	DIR						*dir;
+	DIR				*dir;
 	struct dirent	*ent;
-	char					*ret;
+	char			*ret;
 
 	if (!path)
 		return (NULL);
@@ -76,11 +75,11 @@ char *search_directory(char *path, char *str)
 		while (ent)
 		{
 			if (ft_strncmp(ent->d_name, str, \
-				ft_max(ft_strlen(ent->d_name), ft_strlen(str))) == 0)
+			ft_max(ft_strlen(ent->d_name), ft_strlen(str))) == 0)
 			{
 				ret = ft_strjoin(ft_strdup(path), "/");
 				ret = ft_strjoin(ret, str);
-				break;
+				break ;
 			}
 			ent = readdir(dir);
 		}
@@ -89,15 +88,15 @@ char *search_directory(char *path, char *str)
 	return (ret);
 }
 
-char *search_path(t_shellzin *shell, char *str)
+char	*search_path(t_shellzin *shell, char *str)
 {
 	char	**split;
-	char	*PATH_;
+	char	*path_;
 	char	*ret;
 	char	**ptr;
 
-	PATH_ = shellzin_env_search(shell, "PATH");
-	split = ft_split(PATH_, ':');
+	path_ = shellzin_env_search(shell, "PATH");
+	split = ft_split(path_, ':');
 	if (!split)
 		return (NULL);
 	ptr = split;
@@ -105,7 +104,7 @@ char *search_path(t_shellzin *shell, char *str)
 	{
 		ret = search_directory(*ptr++, str);
 		if (ret)
-			break;
+			break ;
 	}
 	string_list_destroy(split);
 	return (ret);
@@ -113,7 +112,7 @@ char *search_path(t_shellzin *shell, char *str)
 
 int	is_regular_file(const char *path)
 {
-	struct stat path_stat;
+	struct stat	path_stat;
 
 	stat(path, &path_stat);
 	if (errno == ENOENT)
@@ -122,4 +121,3 @@ int	is_regular_file(const char *path)
 		return (-2);
 	return (S_ISREG(path_stat.st_mode));
 }
-
