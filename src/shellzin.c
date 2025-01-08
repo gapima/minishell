@@ -27,6 +27,7 @@ void	shellzin_handle_sigint(int sig)
 void	shellzin_init(t_shellzin *shell, char *envp[])
 {
 	ft_bzero(shell, sizeof(t_shellzin));
+	shell->seed = 12345;
 	getcwd(shell->cwd, PATH_MAX);
 	while (*envp)
 		ft_lstadd_back(&shell->env, ft_lstnew(ft_strdup(*envp++)));

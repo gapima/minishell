@@ -12,13 +12,13 @@
 
 #include "../include/minishell.h"
 
-unsigned int	random_number(void)
+unsigned int	random_number(t_shellzin *shell)
 {
-	static unsigned int	seed;
+	unsigned int	ptr;
 
-	seed = 12345;
-	seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-	return (seed);
+	ptr = (unsigned int)((unsigned long)&random_number & 0x7fffffff);
+	shell->seed = (shell->seed * 1103515245 + 12345 + ptr) & 0x7fffffff;
+	return (shell->seed);
 }
 
 int	heredoc_process_line(char *cmp, int heredoc_fd, int _stdin, bool *err, t_shellzin *shell)
@@ -53,18 +53,17 @@ char	*open_heredoc(char *cmp, int _stdin, t_shellzin *shell)
 	char	*name;
 	bool	err;
 
-	seed = ft_itoa(random_number());
+	seed = ft_itoa(random_number(shell));
 	name = ft_strjoin(ft_strdup("/tmp/heredoc"), seed);
+	free(seed);
 	if (!name)
 		return (NULL);
-	free(seed);
 	fd = open(name, O_CREAT | O_WRONLY | O_TRUNC, 0666);
 	if (fd == -1)
 		return (NULL);
 	err = false;
 	while (heredoc_process_line(cmp, fd, _stdin, &err, shell))
-	{
-	}
+		;
 	if (g_last_signal != SIGINT && err)
 		ft_putendl_fd("shellzin: heredoc: line delimited by end-of-file", 2);
 	close(fd);

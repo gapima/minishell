@@ -149,6 +149,7 @@ typedef struct s_shellzin
 	t_parser	parser;
 	t_ast		*ast;
 	bool		stop_evaluation;
+	unsigned int seed;
 	char		cwd[PATH_MAX];
 }	t_shellzin;
 
