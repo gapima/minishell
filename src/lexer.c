@@ -124,6 +124,36 @@ void	lexer_try_join_tokens(t_lexer *lexer, t_token *token)
 	}
 }
 
+bool	lexer_consume_special(t_lexer *lexer, t_token *token, char c)
+{
+	bool	consumed;
+
+	consumed = false;
+	if (c == '|')
+	{
+		consumed = true;
+		lexer_consume_specific(lexer, '|');
+		token->kind = TokenKind_Pipe;
+	}
+	else if (c == '<')
+	{
+		consumed = true;
+		lexer_consume_specific(lexer, '<');
+		token->kind = TokenKind_LArrow;
+		if (lexer_consume_specific(lexer, '<'))
+			token->kind = TokenKind_DLArrow;
+	}
+	else if (c == '>')
+	{
+		consumed = true;
+		lexer_consume_specific(lexer, '>');
+		token->kind = TokenKind_RArrow;
+		if (lexer_consume_specific(lexer, '>'))
+			token->kind = TokenKind_DRArrow;
+	}
+	return (consumed);
+}
+
 t_token	lexer_next(t_lexer *lexer)
 {
 	t_token	token;
@@ -137,33 +167,12 @@ t_token	lexer_next(t_lexer *lexer)
 	if (lexer_iseof(lexer))
 		return (token);
 	c = lexer_peek(lexer);
-	if (c == '|')
+	if (!lexer_consume_special(lexer, &token, c))
 	{
-		lexer_consume_specific(lexer, '|');
-		token.kind = TokenKind_Pipe;
-	}
-	else if (c == '<')
-	{
-		lexer_consume_specific(lexer, '<');
-		token.kind = TokenKind_LArrow;
-		if (lexer_consume_specific(lexer, '<'))
-			token.kind = TokenKind_DLArrow;
-	}
-	else if (c == '>')
-	{
-		lexer_consume_specific(lexer, '>');
-		token.kind = TokenKind_RArrow;
-		if (lexer_consume_specific(lexer, '>'))
-			token.kind = TokenKind_DRArrow;
-	}
-	else if (c == '\'' || c == '"')
-	{
-		lexer_consume_string_literal(c, lexer, &token);
-		lexer_try_join_tokens(lexer, &token);
-	}
-	else
-	{
-		lexer_consume_word(lexer, &token);
+		if (c == '\'' || c == '"')
+			lexer_consume_string_literal(c, lexer, &token);
+		else
+			lexer_consume_word(lexer, &token);
 		lexer_try_join_tokens(lexer, &token);
 	}
 	token.end = lexer->cursor;
