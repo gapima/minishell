@@ -22,42 +22,44 @@ t_ast	*ast_init(e_ast_kind kind)
 	return (ast);
 }
 
-void	ast_deinit(t_ast *ast)
+void	ast_list_deinit(t_ast *ast)
 {
 	t_list	*head;
 	t_list	*next;
 
+	head = ast->u_node.list_node.list;
+	while (head)
+	{
+		next = head->next;
+		ast_deinit((t_ast *)head->content);
+		free(head);
+		head = next;
+	}
+}
+
+void	ast_deinit(t_ast *ast)
+{
 	if (!ast)
 		return ;
 	if (ast->kind == AstKind_Word)
 	{
 		free(ast->u_node.word_node.content);
-		free(ast);
 	}
 	else if (ast->kind == AstKind_Redirect)
 	{
 		ast_deinit(ast->u_node.redirect_node.left);
 		ast_deinit(ast->u_node.redirect_node.right);
-		free(ast);
 	}
 	else if (ast->kind == AstKind_List)
 	{
-		head = ast->u_node.list_node.list;
-		while (head)
-		{
-			next = head->next;
-			ast_deinit((t_ast *)head->content);
-			free(head);
-			head = next;
-		}
-		free(ast);
+		ast_list_deinit(ast);
 	}
 	else if (ast->kind == AstKind_Pipe)
 	{
 		ast_deinit(ast->u_node.pipe_node.left);
 		ast_deinit(ast->u_node.pipe_node.right);
-		free(ast);
 	}
+	free(ast);
 }
 
 int	wait_children(pid_t pid)
@@ -72,45 +74,50 @@ int	wait_children(pid_t pid)
 	return (status);
 }
 
+
+static void	stat_path_eaccess(char *cmd, char **msg, int *status, struct stat st)
+{
+	*msg = "Command not found";
+	if (S_ISREG(st.st_mode))
+	{
+		if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
+		{
+			*msg = "Permission denied";
+			*status = 126;
+		}
+	}
+	else
+	{
+		if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
+		{
+			*msg = "Is a directory";
+			*status = 126;
+		}
+	}
+}
+
 static int	stat_path(char *cmd, bool is_cmd)
 {
 	struct stat	st;
-	int			status;
+	int					status;
+	char				*msg;
 
 	stat(cmd, &st);
 	status = 127;
+	msg = "error";
 	if (errno == EACCES)
-	{
-		if (S_ISREG(st.st_mode))
-		{
-			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
-			{
-				ft_printf_fd(2, "shellzin: `%s` Permission denied\n", cmd);
-				status = 126;
-			}
-			else
-				ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
-		}
-		else
-		{
-			if (cmd[0] == '/' || (cmd[0] == '.' && cmd[1] == '/'))
-			{
-				ft_printf_fd(2, "shellzin: `%s` Is a directory\n", cmd);
-				status = 126;
-			}
-			else
-				ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
-		}
-	}
+		stat_path_eaccess(cmd, &msg, &status, st);
 	else if (errno == ENOENT)
 	{
-		if (is_cmd)
-			ft_printf_fd(2, "shellzin: Command not found `%s`\n", cmd);
+		if (ft_strchr(cmd, '/') == NULL)
+			msg = "Command not found";
 		else
-			ft_printf_fd(2, "shellzin: No such file or directory `%s`\n", cmd);
+			msg = "No such file or directory";
+		if (!is_cmd)
+			msg = "No such file or directory";
 	}
-	else
-		ft_printf_fd(2, "shellzin: Error\n");
+	ft_printf_fd(2, "shellzin: %s ", msg);
+	ft_putendl_fd(cmd, 2);
 	return (status);
 }
 
@@ -220,12 +227,20 @@ int	open_dup2_close(char *path, int flags, int bflags, int d, int *fd)
 	return (0);
 }
 
+static int	redirection_handle_heredoc(char *path, int *fd)
+{
+	int	status;
+
+	status = open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd);
+	unlink(path);
+	return (status);
+}
+
 int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 {
 	t_ast	*right;
 	char	*path;
 	int		*fd;
-	int		ret;
 
 	if (shell->stop_evaluation)
 		return (1);
@@ -241,16 +256,12 @@ int	redirection_prepare(t_ast *ast, t_shellzin *shell)
 		return (open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_RArrow)
 		return (open_dup2_close(path, O_CREAT | O_TRUNC \
-		| O_WRONLY, 0666, STDOUT_FILENO, fd));
+													| O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DRArrow)
 		return (open_dup2_close(path, O_CREAT | O_APPEND \
-		| O_WRONLY, 0666, STDOUT_FILENO, fd));
+													| O_WRONLY, 0666, STDOUT_FILENO, fd));
 	else if (ast->u_node.redirect_node.kind == TokenKind_DLArrow)
-	{
-		ret = open_dup2_close(path, O_RDONLY, 0666, STDIN_FILENO, fd);
-		unlink(path);
-		return (ret);
-	}
+		return redirection_handle_heredoc(path, fd);
 	return (1);
 }
 
@@ -282,6 +293,28 @@ void	redirect_evaluate(t_shellzin *shell, t_ast *ast)
 	close(restore[1]);
 }
 
+void	pipe_evaluate_run_lhs(t_shellzin *shell, t_ast *ast, int pipes[2])
+{
+	close(pipes[0]);
+	dup2(pipes[1], STDOUT_FILENO);
+	close(pipes[1]);
+	ast_evaluate(shell, ast->u_node.pipe_node.left);
+	ast_deinit(shell->ast);
+	parser_deinit(&shell->parser);
+	shellzin_deinit(shell);
+	exit(shell->last_status);
+}
+
+void	pipe_evaluate_run_rhs(t_shellzin *shell, t_ast *ast, int pipes[2], int restore)
+{
+	close(pipes[1]);
+	dup2(pipes[0], STDIN_FILENO);
+	close(pipes[0]);
+	ast_evaluate(shell, ast->u_node.pipe_node.right);
+	dup2(restore, STDIN_FILENO);
+	close(restore);
+}
+
 void	pipe_evaluate(t_shellzin *shell, t_ast *ast)
 {
 	pid_t	pid;
@@ -305,22 +338,8 @@ void	pipe_evaluate(t_shellzin *shell, t_ast *ast)
 	}
 	restore = dup(STDIN_FILENO);
 	if (pid == 0)
-	{
-		close(pipes[0]);
-		dup2(pipes[1], STDOUT_FILENO);
-		close(pipes[1]);
-		ast_evaluate(shell, ast->u_node.pipe_node.left);
-		ast_deinit(shell->ast);
-		parser_deinit(&shell->parser);
-		shellzin_deinit(shell);
-		exit(shell->last_status);
-	}
-	close(pipes[1]);
-	dup2(pipes[0], STDIN_FILENO);
-	close(pipes[0]);
-	ast_evaluate(shell, ast->u_node.pipe_node.right);
-	dup2(restore, STDIN_FILENO);
-	close(restore);
+		pipe_evaluate_run_lhs(shell, ast, pipes);
+	pipe_evaluate_run_rhs(shell, ast, pipes, restore);
 	waitpid(pid, 0, 0);
 }
 
