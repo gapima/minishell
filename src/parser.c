@@ -107,7 +107,7 @@ t_token	parser_consume(t_parser *parser)
 	return (token);
 }
 
-static bool	is_redirection_symbol(e_token_kind kind)
+static bool	is_redirection_symbol(enum e_token_kind kind)
 {
 	return (kind == TokenKind_LArrow \
 	|| kind == TokenKind_RArrow \
@@ -253,7 +253,7 @@ static t_ast	*parse_word(t_parser *parser, t_shellzin *shell)
 {
 	t_ast			*word_node;
 	t_token			token;
-	e_token_kind	kind;
+	enum e_token_kind	kind;
 
 	if (parser->has_error)
 		return (NULL);
@@ -299,7 +299,7 @@ static t_ast	*parse_word_list(t_parser *parser, t_shellzin *shell)
 	return (list_node);
 }
 
-static t_ast	*ast_redirect_node_init(e_token_kind kind, t_ast *node, t_ast *right)
+static t_ast	*ast_redirect_node_init(enum e_token_kind kind, t_ast *node, t_ast *right)
 {
 	t_ast	*redirect_node;
 
@@ -315,7 +315,7 @@ static t_ast	*parse_redirect(t_parser *parser, t_shellzin *shell)
 {
 	t_ast			*node;
 	t_ast			*right;
-	e_token_kind	kind;
+	enum e_token_kind	kind;
 
 	if (parser->has_error)
 		return (NULL);

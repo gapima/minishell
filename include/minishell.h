@@ -33,7 +33,7 @@
 
 extern volatile int	g_last_signal;
 
-typedef enum e_token_kind
+enum e_token_kind
 {
 	TokenKind_Eof,
 	TokenKind_Word,
@@ -44,11 +44,11 @@ typedef enum e_token_kind
 	TokenKind_DLArrow,
 	TokenKind_DRArrow,
 	TokenKind_Pipe
-}	e_token_kind;
+};
 
 typedef struct s_token
 {
-	e_token_kind	kind;
+	enum e_token_kind	kind;
 	char			*content;
 	size_t			start;
 	size_t			end;
@@ -92,46 +92,46 @@ t_token		parser_peek(t_parser *parser);
 t_token		parser_peek_last(t_parser *parser);
 void		parser_set_error(t_parser *parser, char *msg);
 
-typedef enum e_ast_kind
+enum e_ast_kind
 {
 	AstKind_Eof,
 	AstKind_List,
 	AstKind_Word,
 	AstKind_Redirect,
 	AstKind_Pipe,
-}	e_ast_kind;
+};
 
-typedef struct	e_ast t_ast;
+typedef struct	s_ast t_ast;
 
-typedef struct e_ast_word
+typedef struct s_ast_word
 {
 	char	*content;
 	bool	is_expanded;
 	bool	is_string;
 }	t_ast_word;
 
-typedef struct e_ast_list
+typedef struct s_ast_list
 {
 	t_list	*list;
 }	t_ast_list;
 
-typedef struct e_ast_redirect
+typedef struct s_ast_redirect
 {
 	t_ast			*left;
 	t_ast			*right;
-	e_token_kind	kind;
+	enum e_token_kind	kind;
 	int				fd;
 }	t_ast_redirect;
 
-typedef struct e_ast_pipe
+typedef struct s_ast_pipe
 {
 	t_ast	*left;
 	t_ast	*right;
 }	t_ast_pipe;
 
-struct e_ast 
+struct s_ast 
 {
-	e_ast_kind	kind;
+	enum e_ast_kind	kind;
 	bool		is_error;
 	union {
 		t_ast_word word_node;
@@ -155,7 +155,7 @@ typedef struct s_shellzin
 int		is_regular_file(const char *path);
 
 void	ast_deinit(t_ast *ast);
-t_ast	*ast_init(e_ast_kind kind);
+t_ast	*ast_init(enum e_ast_kind kind);
 void	ast_evaluate(t_shellzin *shell, t_ast *ast);
 
 t_ast	*parse(char *line, t_shellzin *shell);
