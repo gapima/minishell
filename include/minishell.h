@@ -154,7 +154,6 @@ typedef struct s_shellzin
 
 int		is_regular_file(const char *path);
 
-void	ast_print_state(t_ast *ast, int lv);
 void	ast_deinit(t_ast *ast);
 t_ast	*ast_init(e_ast_kind kind);
 void	ast_evaluate(t_shellzin *shell, t_ast *ast);

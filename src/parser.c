@@ -115,56 +115,81 @@ static bool	is_redirection_symbol(e_token_kind kind)
 	|| kind == TokenKind_DLArrow);
 }
 
-static void	try_expand_variable(char **str, t_shellzin *shell)
+static size_t variable_get_end(char *at_dollar)
 {
-	char	*after;
-	char	*var;
-	char	*ret;
-	char	*s;
-	size_t	start;
 	size_t	end;
-	size_t	len;
+
+	end = 1;
+	while (at_dollar[end] &&
+				!ft_strchr(SPECIAL, at_dollar[end]) &&
+				(ft_isalnum(at_dollar[end]) || at_dollar[end] == '_'))
+		end++;
+	if (at_dollar[1] == '?' || (at_dollar[1] == '_' && at_dollar[2] == 0))
+		end++;
+	return (end);
+}
+
+static char	*variable_from_key(char *var_key, t_shellzin *shell)
+{
+	char	*var;
 
 	var = NULL;
-	if (!str || !*str || !shell)
-		return ;
-	after = ft_strchr(*str, '$');
-	if (!after)
-		return ;
-	start = after - (*str);
-	end = 1;
-	while (after[end] \
-	&& !ft_strchr(SPECIAL, after[end]) \
-	&& (ft_isalnum(after[end]) || after[end] == '_'))
-		end++;
-	if (after[1] == '?' \
-	|| (after[1] == '_' && after[2] == 0))
-		end++;
-	if (end == 1)
-		return ;
-	s = ft_substr(*str, start + 1, end - 1);
-	if (!s)
-		return ;
-	if (s[0] == '?')
+	if (var_key[0] == '?')
 		var = ft_itoa(shell->last_status);
 	else
 	{
-		var = shellzin_env_search(shell, s);
+		var = shellzin_env_search(shell, var_key);
 		if (var)
 			var = ft_strdup(var);
 	}
-	free(s);
+	free(var_key);
 	if (!var)
 		var = ft_strdup("");
-	len = start + ft_strlen(var) + ft_strlen(after + end) + 1;
-	ret = ft_calloc(sizeof(char), len);
-	shellzin_assert(ret != NULL, "(ft_realloc) could not allocate memory");
-	ft_memcpy(ret, *str, start);
-	ft_memcpy(ret + start, var, ft_strlen(var));
-	ft_memcpy(ret + start + ft_strlen(var), after + end, \
-	ft_strlen(after + end));
-	free(*str);
+	return (var);
+}
+
+static char	*variable_expand(char **src, char *at_dollar, size_t start, t_shellzin *shell)
+{
+	char		*var_key;
+	char		*var;
+	char		*result;
+	size_t	end;
+	size_t	size;
+
+	end = variable_get_end(at_dollar);
+	if (end == 1)
+		return (NULL);
+	var_key = ft_substr(*src, start + 1, end - 1);
+	if (!var_key)
+		return (NULL);
+	var = variable_from_key(var_key, shell);
+	size = start + ft_strlen(var) + ft_strlen(at_dollar + end) + 1;
+	result = ft_calloc(sizeof(char), size);
+	if (!result)
+		return (NULL);
+	ft_memcpy(result, *src, start);
+	ft_memcpy(result + start, var, ft_strlen(var));
+	ft_memcpy(result + start + ft_strlen(var), at_dollar + end, ft_strlen(at_dollar + end));
 	free(var);
+	return (result);
+}
+
+static void	try_expand_variable(char **str, t_shellzin *shell)
+{
+	char	*at_dollar;
+	char	*ret;
+	size_t	start;
+
+	if (!str)
+		return ;
+	at_dollar = ft_strchr(*str, '$');
+	if (!at_dollar)
+		return ;
+	start = at_dollar - (*str);
+	ret = variable_expand(str, at_dollar, start, shell);
+	if (ret == NULL)
+		return ;
+	free(*str);
 	*str = ret;
 	try_expand_variable(str, shell);
 }
@@ -316,9 +341,18 @@ static t_ast	*parse_redirect(t_parser *parser, t_shellzin *shell)
 	return (node);
 }
 
-static t_ast	*parse_pipe(t_parser *parser, t_shellzin *shell)
+static t_ast	*ast_pipe_node_init(t_ast *node, t_ast *right)
 {
 	t_ast	*pipe_node;
+
+	pipe_node = ast_init(AstKind_Pipe);
+	pipe_node->u_node.pipe_node.left = node;
+	pipe_node->u_node.pipe_node.right = right;
+	return (pipe_node);
+}
+
+static t_ast	*parse_pipe(t_parser *parser, t_shellzin *shell)
+{
 	t_ast	*node;
 	t_ast	*right;
 
@@ -339,57 +373,9 @@ static t_ast	*parse_pipe(t_parser *parser, t_shellzin *shell)
 			"shellzin: syntax error: Unexpected token");
 			break ;
 		}
-		pipe_node = ast_init(AstKind_Pipe);
-		pipe_node->u_node.pipe_node.left = node;
-		pipe_node->u_node.pipe_node.right = right;
-		node = pipe_node;
+		node = ast_pipe_node_init(node, right);
 	}
 	return (node);
-}
-
-static void	print_indent(int lv)
-{
-	int	n;
-
-	n = 0;
-	while (n < lv)
-	{
-		ft_putchar(' ');
-		ft_putchar(' ');
-		n++;
-	}
-}
-
-void	ast_print_state(t_ast *ast, int lv)
-{
-	t_list	*head;
-
-	if (!ast)
-		return ;
-	print_indent(lv);
-	if (ast->kind == AstKind_Word)
-		ft_putendl_fd(ast->u_node.word_node.content, 1);
-	else if (ast->kind == AstKind_Redirect)
-	{
-		ft_putendl_fd("(REDIRECT)", 1);
-		ast_print_state(ast->u_node.redirect_node.left, lv + 1);
-		ast_print_state(ast->u_node.redirect_node.right, lv + 1);
-	}
-	else if (ast->kind == AstKind_List)
-	{
-		head = ast->u_node.list_node.list;
-		while (head)
-		{
-			ast_print_state((t_ast *)head->content, lv);
-			head = head->next;
-		}
-	}
-	else if (ast->kind == AstKind_Pipe)
-	{
-		ft_putendl_fd("<PIPE>", 1);
-		ast_print_state(ast->u_node.pipe_node.left, lv + 1);
-		ast_print_state(ast->u_node.pipe_node.right, lv + 1);
-	}
 }
 
 t_ast	*parse(char *line, t_shellzin *shell)
