@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:36 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 18:58:56 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 20:07:23 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ void	shellzin_evaluate(char *line, t_shellzin *shell)
 	else if (ast)
 	{
 		shell->ast = ast;
+		shellzin_heredoc(ast, shell);
 		ast_evaluate(shell, ast);
 	}
 	parser_deinit(&shell->parser);

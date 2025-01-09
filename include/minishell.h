@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:46:56 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 20:57:34 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,9 +187,17 @@ void	shellzin_pwd(char **argv, t_shellzin *shell);
 void	shellzin_echo(char **argv, t_shellzin *shell);
 void	shellzin_export(char **argv, t_shellzin *shell);
 void	shellzin_exit(char **argv, t_shellzin *shell);
+void	redirect_evaluate(t_shellzin *shell, t_ast *ast);
+t_ast	*ast_word_node_init(char *content);
+int		open_dup2_close(char *path, int flags, int d, int *fd);
+int		stat_path(char *cmd, bool is_cmd);
+void	pipe_evaluate(t_shellzin *shell, t_ast *ast);
+void	list_evaluate(t_shellzin *shell, t_ast *ast);
+int		command_spawn(char **argv, char **env, t_shellzin *shell);
 
 bool	string_try_expand(char **str, size_t size, t_shellzin *shell);
 void	shellzin_heredoc(t_ast *ast, t_shellzin *shell);
+void	sort_tab(char **tab, int sz);
 
 bool	shellzin_redisplay(bool v, int s);
 bool	shellzin_is_heredoc(bool v, int s);

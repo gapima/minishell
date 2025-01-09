@@ -6,40 +6,11 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 18:18:19 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:41:49 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 20:15:16 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
-
-int	ft_min(int a, int b)
-{
-	if (a > b)
-		return (b);
-	return (a);
-}
-
-int	ft_max(int a, int b)
-{
-	if (a > b)
-		return (a);
-	return (b);
-}
-
-void	ft_lst_destroy(t_list *list)
-{
-	t_list	*head;
-	t_list	*next;
-
-	head = list;
-	while (head)
-	{
-		next = head->next;
-		free(head->content);
-		free(head);
-		head = next;
-	}
-}
 
 void	*ft_realloc(void *m, size_t prev_size, size_t new_size)
 {

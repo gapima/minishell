@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 19:49:47 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:54:11 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 20:59:02 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,36 +34,6 @@ bool	shellzin_export_is_valid(char *test)
 	return (r);
 }
 
-void	swap(char **a, char **b)
-{
-	char	*tmp;
-
-	tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
-
-void	sort_tab(char **tab, int sz)
-{
-	int		idx;
-	bool	sw;
-
-	sw = true;
-	while (sw)
-	{
-		idx = -1;
-		sw = false;
-		while (++idx < sz - 1)
-			if (ft_strncmp(tab[idx], tab[idx + 1], \
-			ft_max(ft_strlen(tab[idx]), ft_strlen(tab[idx + 1]))) > 0)
-			{
-				swap(&tab[idx], &tab[idx + 1]);
-				sw = true;
-			}
-		sz--;
-	}
-}
-
 void	shellzin_export_print(t_shellzin *shell)
 {
 	t_list	*node;
@@ -87,9 +57,9 @@ void	shellzin_export_print(t_shellzin *shell)
 	free(tab);
 }
 
-bool shellzin_check_export(char **split)
+bool	shellzin_check_export(char **split)
 {
-	bool valid;
+	bool	valid;
 
 	valid = false;
 	if (split[0] == NULL)
@@ -99,16 +69,18 @@ bool shellzin_check_export(char **split)
 		if (shellzin_export_is_valid(split[0]) && !ft_isdigit(split[0][0]))
 			valid = true;
 		else
-			ft_printf_fd(2, "shellzin: export: %s=%s not a valid identifier\n", split[0], split[1]);
+			ft_printf_fd(2, "shellzin: export: %s=%s \
+			not a valid identifier\n", split[0], split[1]);
 	}
 	return (valid);
 }
 
-void shellzin_export_is_error(char **argv, size_t idx, t_shellzin *shell)
+void	shellzin_export_is_error(char **argv, size_t idx, t_shellzin *shell)
 {
 	if (!shellzin_export_is_valid(argv[idx]) || ft_isdigit(argv[idx][0]))
 	{
-		ft_printf_fd(2, "shellzin: export: %s not a valid identifier\n", argv[idx]);
+		ft_printf_fd(2, "shellzin: export: %s \
+		not a valid identifier\n", argv[idx]);
 		shell->last_status = 1;
 	}
 	else if (argv[idx][0] == '\0')
@@ -121,7 +93,7 @@ void shellzin_export_is_error(char **argv, size_t idx, t_shellzin *shell)
 void	shellzin_export(char **argv, t_shellzin *shell)
 {
 	size_t	idx;
-	char		**split;
+	char	**split;
 
 	if (argv[1] == NULL)
 		shellzin_export_print(shell);
@@ -132,7 +104,7 @@ void	shellzin_export(char **argv, t_shellzin *shell)
 		if (!ft_strchr(argv[idx], '='))
 		{
 			shellzin_export_is_error(argv, idx, shell);
-			continue;
+			continue ;
 		}
 		split = ft_split(argv[idx], '=');
 		if (shellzin_check_export(split))

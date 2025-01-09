@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 19:22:14 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:34:38 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 20:06:45 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,6 +387,5 @@ t_ast	*parse(char *line, t_shellzin *shell)
 	parser_batch_tokens(&shell->parser);
 	shell->stop_evaluation = false;
 	ast = parse_pipe(&shell->parser, shell);
-	shellzin_heredoc(ast, shell);
 	return (ast);
 }
