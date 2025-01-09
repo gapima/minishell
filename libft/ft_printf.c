@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/29 18:00:38 by glima             #+#    #+#             */
-/*   Updated: 2024/12/29 18:00:41 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 23:40:34 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ static int	ft_convert(char c, va_list arg)
 	else if (c == 's')
 		len += ft_putstr(va_arg(arg, char *));
 	else if (c == 'p')
-		len += ft_print_point(va_arg(arg, unsigned long), "0123456789abcdef", 1);
+		len += ft_print_point(va_arg(arg, unsigned long), \
+		"0123456789abcdef", 1);
 	else if (c == 'd')
 		len += ft_putnbr(va_arg(arg, int));
 	else if (c == 'i')
@@ -48,7 +49,8 @@ static int	ft_convert_fd(char c, va_list arg, int fd)
 	else if (c == 's')
 		len += ft_putstr_fd(va_arg(arg, char *), fd);
 	else if (c == 'p')
-		len += ft_print_point(va_arg(arg, unsigned long), "0123456789abcdef", fd);
+		len += ft_print_point(va_arg(arg, unsigned long), \
+		"0123456789abcdef", fd);
 	else if (c == 'd')
 		len += ft_putnbr_fd(va_arg(arg, int), fd);
 	else if (c == 'i')

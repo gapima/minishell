@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   shellzin.c                                         :+:      :+:    :+:   */
+/*   shellzin_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/29 18:34:29 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:38:02 by glima            ###   ########.fr       */
+/*   Created: 2025/01/08 23:38:33 by glima             #+#    #+#             */
+/*   Updated: 2025/01/08 23:39:06 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ void	shellzin_init(t_shellzin *shell, char *envp[])
 		ft_lstadd_back(&shell->env, ft_lstnew(ft_strdup(*envp++)));
 }
 
-t_list	*shellzin_env_search_node(t_shellzin *shell, const char *key, t_list **p_ptr, bool r_prev)
+t_list	*shellzin_env_search_node(t_shellzin *shell, \
+const char *key, t_list **p_ptr, bool r_prev)
 {
 	t_list	*head;
 	t_list	*prev;
@@ -90,39 +91,4 @@ char	*shellzin_env_search(t_shellzin *shell, const char *key)
 		head = head->next;
 	}
 	return (env);
-}
-
-void	shellzin_deinit(t_shellzin *shell)
-{
-	rl_clear_history();
-	ft_lst_destroy(shell->env);
-}
-
-bool	shellzin_redisplay(bool v, int s)
-{
-	static bool	redisplay;
-
-	if (s == 0)
-		return (redisplay);
-	redisplay = v;
-	return (redisplay);
-}
-
-bool	shellzin_is_heredoc(bool v, int s)
-{
-	static bool	heredoc;
-
-	if (s == 0)
-		return (heredoc);
-	heredoc = v;
-	return (heredoc);
-}
-
-void	shellzin_assert(bool cond, char *msg)
-{
-	if (!cond)
-	{
-		ft_putendl_fd(msg, 2);
-		exit(1);
-	}
 }

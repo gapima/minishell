@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 23:06:37 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 23:41:25 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,8 @@ t_ast		*parse(char *line, t_shellzin *shell);
 t_ast		*ast_word_node_init(char *content);
 t_ast		*ast_pipe_node_init(t_ast *node, t_ast *right);
 t_ast		*parse_pipe(t_parser *parser, t_shellzin *shell);
-t_ast		*ast_redirect_node_init(enum e_token_kind kind, t_ast *node, t_ast *right);
+t_ast		*ast_redirect_node_init(enum e_token_kind kind, \
+t_ast *node, t_ast *right);
 t_ast		*parse_redirect(t_parser *parser, t_shellzin *shell);
 t_ast		*parse_word(t_parser *parser, t_shellzin *shell);
 t_ast		*parse_word_list(t_parser *parser, t_shellzin *shell);
