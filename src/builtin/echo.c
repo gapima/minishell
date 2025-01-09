@@ -19,9 +19,12 @@ void	shellzin_echo(char **argv, t_shellzin *shell)
 
 	idx = 1;
 	nl = true;
-	if (argv[1] && *argv[1] \
-	&& ft_strncmp(argv[1], "-n", ft_strlen(argv[1])) == 0)
+	while (argv[idx] &&
+		argv[idx][0] == '-' &&
+		argv[idx][1] == 'n')
 	{
+		if (argv[idx][2] != '\0' && argv[idx][2] != 'n')
+			break;
 		idx += 1;
 		nl = false;
 	}
