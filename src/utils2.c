@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/08 20:42:31 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 20:57:44 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 22:11:50 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,4 +89,12 @@ void	sort_tab(char **tab, int sz)
 		}
 		sz--;
 	}
+}
+
+void	token_print_state(t_token token)
+{
+	printf("(%s)", get_token_symbol(token));
+	if (token.kind == TokenKind_Word || token.kind == TokenKind_StringLiteral)
+		printf(": %s", token.content);
+	printf("\n");
 }

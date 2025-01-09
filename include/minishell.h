@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 22:08:57 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 22:24:24 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,7 @@ void		parser_deinit(t_parser *parser);
 void		parser_batch_tokens(t_parser *parser);
 void		parser_free_token_list(t_parser *parser);
 void		parser_set_error(t_parser *parser, char *msg);
+void		lexer_skip_whitespaces(t_lexer *lexer);
 
 char		*get_token_symbol(t_token token);
 char		lexer_peek(t_lexer *lexer);
@@ -192,6 +193,7 @@ char		*shellzin_env_search(t_shellzin *shell, const char *key);
 char		**join_string_list(t_list *list);
 char		**join_word_list(t_list *list);
 char		*search_path(t_shellzin *shell, char *str);
+char		lexer_consume_specific(t_lexer *lexer, char c);
 
 bool		lexer_iseof(t_lexer *lexer);
 bool		parser_iseof(t_parser *parser);
