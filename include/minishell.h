@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 20:57:34 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 21:22:36 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,14 +143,15 @@ struct s_ast
 
 typedef struct s_shellzin
 {
-	int			last_status;
-	t_list		*env;
-	t_lexer		lexer;
-	t_parser	parser;
-	t_ast		*ast;
-	bool		stop_evaluation;
-	unsigned int seed;
-	char		cwd[PATH_MAX];
+	int				last_status;
+	t_list			*env;
+	t_lexer			lexer;
+	t_parser		parser;
+	t_ast			*ast;
+	bool			stop_evaluation;
+	unsigned int	seed;
+	char			cwd[PATH_MAX];
+	bool			heredoc_error;
 }	t_shellzin;
 
 int		is_regular_file(const char *path);
