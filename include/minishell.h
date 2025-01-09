@@ -6,7 +6,7 @@
 /*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 22:24:24 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/08 23:06:37 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,10 +140,17 @@ t_lexer		lexer_init(char *str);
 t_token		lexer_next(t_lexer *lexer);
 t_token		parser_peek(t_parser *parser);
 t_token		parser_peek_last(t_parser *parser);
+t_token		parser_consume(t_parser *parser);
 
 t_ast		*ast_init(enum e_ast_kind kind);
 t_ast		*parse(char *line, t_shellzin *shell);
 t_ast		*ast_word_node_init(char *content);
+t_ast		*ast_pipe_node_init(t_ast *node, t_ast *right);
+t_ast		*parse_pipe(t_parser *parser, t_shellzin *shell);
+t_ast		*ast_redirect_node_init(enum e_token_kind kind, t_ast *node, t_ast *right);
+t_ast		*parse_redirect(t_parser *parser, t_shellzin *shell);
+t_ast		*parse_word(t_parser *parser, t_shellzin *shell);
+t_ast		*parse_word_list(t_parser *parser, t_shellzin *shell);
 
 t_parser	parser_init(t_lexer *lexer);
 t_list		*shellzin_env_search_node(t_shellzin *shell, \
@@ -155,6 +162,7 @@ int			open_dup2_close(char *path, int flags, int d, int *fd);
 int			stat_path(char *cmd, bool is_cmd);
 int			command_spawn(char **argv, char **env, t_shellzin *shell);
 int			is_regular_file(const char *path);
+size_t		variable_get_end(char *at_dollar);
 
 void		lexer_print_state(t_lexer *lexer);
 void		lexer_consume_until(t_lexer *lexer, char c);
@@ -194,6 +202,7 @@ char		**join_string_list(t_list *list);
 char		**join_word_list(t_list *list);
 char		*search_path(t_shellzin *shell, char *str);
 char		lexer_consume_specific(t_lexer *lexer, char c);
+char		*variable_from_key(char *var_key, t_shellzin *shell);
 
 bool		lexer_iseof(t_lexer *lexer);
 bool		parser_iseof(t_parser *parser);
@@ -203,4 +212,6 @@ bool		shellzin_try_run_builtin(char **argv, t_shellzin *shell);
 bool		string_try_expand(char **str, size_t size, t_shellzin *shell);
 bool		shellzin_redisplay(bool v, int s);
 bool		shellzin_is_heredoc(bool v, int s);
+bool		is_redirection_symbol(enum e_token_kind kind);
+
 #endif
