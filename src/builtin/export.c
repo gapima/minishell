@@ -64,13 +64,12 @@ bool	shellzin_check_export(char **split)
 	valid = false;
 	if (split[0] == NULL)
 		ft_printf_fd(2, "shellzin: export: `=` not a valid identifier\n");
-	if (split[0] != NULL && split[1] != NULL)
+	if (split[0] != NULL)
 	{
 		if (shellzin_export_is_valid(split[0]) && !ft_isdigit(split[0][0]))
 			valid = true;
 		else
-			ft_printf_fd(2, "shellzin: export: %s=%s \
-			not a valid identifier\n", split[0], split[1]);
+			ft_printf_fd(2, "shellzin: export: %s=%s not a valid identifier\n", split[0], split[1]);
 	}
 	return (valid);
 }

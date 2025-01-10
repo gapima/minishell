@@ -62,7 +62,7 @@ static int	ft_convert_fd(char c, va_list arg, int fd)
 	else if (c == 'X')
 		len += ft_itoa_base(va_arg(arg, unsigned int), "0123456789ABCDEF", fd);
 	else if (c == '%')
-		len += ft_putchar('%');
+		len += ft_putchar_fd('%', fd);
 	return (len);
 }
 
