@@ -12,7 +12,7 @@
 
 #include "../../include/minishell.h"
 
-bool	shellzin_export_is_valid(char *test)
+static bool	shellzin_export_is_valid(char *test)
 {
 	size_t	idx;
 	bool	r;
@@ -34,7 +34,7 @@ bool	shellzin_export_is_valid(char *test)
 	return (r);
 }
 
-void	shellzin_export_print(t_shellzin *shell)
+static void	shellzin_export_print(t_shellzin *shell)
 {
 	t_list	*node;
 	char	**tab;
@@ -58,7 +58,7 @@ void	shellzin_export_print(t_shellzin *shell)
 	free(tab);
 }
 
-bool	shellzin_check_export(char **split)
+static bool	shellzin_check_export(char **split)
 {
 	bool	valid;
 
@@ -75,19 +75,22 @@ bool	shellzin_check_export(char **split)
 	return (valid);
 }
 
-void	shellzin_export_is_error(char **argv, size_t idx, t_shellzin *shell)
+static int	shellzin_export_is_error(char **argv, size_t idx, t_shellzin *shell)
 {
 	if (!shellzin_export_is_valid(argv[idx]) || ft_isdigit(argv[idx][0]))
 	{
 		ft_printf_fd(2, "shellzin: export: %s \
 		not a valid identifier\n", argv[idx]);
 		shell->last_status = 1;
+		return (1);
 	}
 	else if (argv[idx][0] == '\0')
 	{
 		ft_printf_fd(2, "shellzin: export: not a valid identifier\n");
 		shell->last_status = 1;
+		return (1);
 	}
+	return (0);
 }
 
 void	shellzin_export(char **argv, t_shellzin *shell)
@@ -101,11 +104,10 @@ void	shellzin_export(char **argv, t_shellzin *shell)
 	shell->last_status = 0;
 	while (argv[++idx])
 	{
-		if (!ft_strchr(argv[idx], '='))
+		if (!ft_strchr(argv[idx], '=') || argv[idx][0] == '=')
 		{
-			if (shellzin_export_is_valid(argv[idx]) && !ft_isdigit(argv[idx][0]))
+			if (!shellzin_export_is_error(argv, idx, shell))
 				export_set_shell_variable(argv[idx], shell);
-			shellzin_export_is_error(argv, idx, shell);
 			continue ;
 		}
 		split = ft_split(argv[idx], '=');
