@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   export.c                                           :+:      :+:    :+:   */
+/*   export_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*   By: glima <glima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 19:49:47 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 20:59:02 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/10 20:22:13 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	export_set_shell_variable(char *var, t_shellzin *shell)
 {
-	t_list *node;
+	t_list	*node;
 
 	node = shellzin_env_search_node(shell->shell_variables, var, NULL, false);
 	if (!node)
@@ -35,10 +35,9 @@ void	export_print_shell_variable(t_shellzin *shell)
 	}
 }
 
-
 void	shellzin_export_print_var(char *var)
 {
-	char *dup;
+	char	*dup;
 	char	*eq;
 	char	*right;
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   echo.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*   By: glima <glima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 19:48:40 by glima             #+#    #+#             */
-/*   Updated: 2025/01/07 19:49:35 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/10 20:23:33 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,12 @@ void	shellzin_echo(char **argv, t_shellzin *shell)
 
 	idx = 1;
 	nl = true;
-	while (argv[idx] &&
-		argv[idx][0] == '-' &&
-		argv[idx][1] == 'n')
+	while (argv[idx] \
+	&& argv[idx][0] == '-' \
+	&& argv[idx][1] == 'n')
 	{
 		if (argv[idx][2] != '\0' && argv[idx][2] != 'n')
-			break;
+			break ;
 		idx += 1;
 		nl = false;
 	}

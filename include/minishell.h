@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*   By: glima <glima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 18:16:30 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 23:41:25 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/10 20:23:59 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ t_ast		*parse_word(t_parser *parser, t_shellzin *shell);
 t_ast		*parse_word_list(t_parser *parser, t_shellzin *shell);
 
 t_parser	parser_init(t_lexer *lexer);
-t_list	*shellzin_env_search_node(t_list *head, \
+t_list		*shellzin_env_search_node(t_list *head, \
 const char *key, t_list **p_ptr, bool r_prev);
 
 int			ft_min(int a, int b);

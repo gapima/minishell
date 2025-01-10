@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: glima <gapima7@gmail.com>                  +#+  +:+       +#+        */
+/*   By: glima <glima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 19:49:47 by glima             #+#    #+#             */
-/*   Updated: 2025/01/08 20:59:02 by glima            ###   ########.fr       */
+/*   Updated: 2025/01/10 20:22:57 by glima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,8 @@ static bool	shellzin_check_export(char **split)
 		if (shellzin_export_is_valid(split[0]) && !ft_isdigit(split[0][0]))
 			valid = true;
 		else
-			ft_printf_fd(2, "shellzin: export: %s=%s not a valid identifier\n", split[0], split[1]);
+			ft_printf_fd(2, "shellzin: export: %s=%s \
+			not a valid identifier\n", split[0], split[1]);
 	}
 	return (valid);
 }
