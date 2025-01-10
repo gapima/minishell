@@ -22,7 +22,7 @@ void	shellzin_unset(char **argv, t_shellzin *shell)
 	prev = NULL;
 	while (argv[idx])
 	{
-		node = shellzin_env_search_node(shell, argv[idx++], &prev, true);
+		node = shellzin_env_search_node(shell->env, argv[idx++], &prev, true);
 		if (node)
 		{
 			if (prev)

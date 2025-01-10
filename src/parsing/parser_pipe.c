@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 t_ast	*ast_pipe_node_init(t_ast *node, t_ast *right)
 {

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 void	lexer_consume_string_literal(char c, t_lexer *lexer, t_token *token)
 {

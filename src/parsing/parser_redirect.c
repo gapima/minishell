@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 static t_ast	*while_redirect(t_ast *node, \
 t_parser *parser, t_shellzin *shell)

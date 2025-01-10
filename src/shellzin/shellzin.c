@@ -10,12 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 void	shellzin_deinit(t_shellzin *shell)
 {
 	rl_clear_history();
 	ft_lst_destroy(shell->env);
+	ft_lst_destroy(shell->shell_variables);
 }
 
 bool	shellzin_redisplay(bool v, int s)

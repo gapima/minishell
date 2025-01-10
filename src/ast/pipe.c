@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 static void	pipe_evaluate_run_lhs(t_shellzin *shell, t_ast *ast, int pipes[2])
 {

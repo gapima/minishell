@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 static void	stat_path_eaccess(char *cmd, char **msg, \
 int *status, struct stat st)

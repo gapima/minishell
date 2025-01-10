@@ -19,14 +19,14 @@
 # include <stdbool.h>
 # include <unistd.h>
 # include <signal.h>
-# include <readline/readline.h>
-# include <readline/history.h>
 # include <sys/wait.h>
 # include <errno.h>
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
 # include <stdlib.h>
+# include <readline/readline.h>
+# include <readline/history.h>
 
 # define BLANKS " \t\v\f\n\v\f\r"
 # define SPECIAL " \v\f\n\v\f\r\t<>|\'\""
@@ -126,6 +126,7 @@ typedef struct s_shellzin
 {
 	int				last_status;
 	t_list			*env;
+	t_list			*shell_variables;
 	t_lexer			lexer;
 	t_parser		parser;
 	t_ast			*ast;
@@ -154,7 +155,7 @@ t_ast		*parse_word(t_parser *parser, t_shellzin *shell);
 t_ast		*parse_word_list(t_parser *parser, t_shellzin *shell);
 
 t_parser	parser_init(t_lexer *lexer);
-t_list		*shellzin_env_search_node(t_shellzin *shell, \
+t_list	*shellzin_env_search_node(t_list *head, \
 const char *key, t_list **p_ptr, bool r_prev);
 
 int			ft_min(int a, int b);
@@ -183,6 +184,9 @@ void		shellzin_unset(char **argv, t_shellzin *shell);
 void		shellzin_pwd(char **argv, t_shellzin *shell);
 void		shellzin_echo(char **argv, t_shellzin *shell);
 void		shellzin_export(char **argv, t_shellzin *shell);
+void		export_print_shell_variable(t_shellzin *shell);
+void		shellzin_export_print_var(char *var);
+void		export_set_shell_variable(char *var, t_shellzin *shell);
 void		shellzin_exit(char **argv, t_shellzin *shell);
 void		redirect_evaluate(t_shellzin *shell, t_ast *ast);
 void		shellzin_heredoc(t_ast *ast, t_shellzin *shell);

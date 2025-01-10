@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/minishell.h"
+#include "../../include/minishell.h"
 
 void	shellzin_handle_sigint(int sig)
 {
@@ -33,14 +33,12 @@ void	shellzin_init(t_shellzin *shell, char *envp[])
 		ft_lstadd_back(&shell->env, ft_lstnew(ft_strdup(*envp++)));
 }
 
-t_list	*shellzin_env_search_node(t_shellzin *shell, \
+t_list	*shellzin_env_search_node(t_list *head, \
 const char *key, t_list **p_ptr, bool r_prev)
 {
-	t_list	*head;
 	t_list	*prev;
 
 	prev = NULL;
-	head = shell->env;
 	while (head)
 	{
 		if (ft_strncmp(key, head->content, ft_strlen(key)) == 0)
@@ -60,7 +58,7 @@ bool	shellzin_set_or_change_env(t_shellzin *shell, char *key, char *value)
 
 	new = ft_strjoin(ft_strdup(key), "=");
 	new = ft_strjoin(new, value);
-	node = shellzin_env_search_node(shell, key, NULL, false);
+	node = shellzin_env_search_node(shell->env, key, NULL, false);
 	if (node)
 	{
 		free(node->content);

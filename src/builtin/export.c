@@ -53,7 +53,8 @@ void	shellzin_export_print(t_shellzin *shell)
 	sort_tab(tab, idx);
 	idx = 0;
 	while (tab[idx])
-		ft_printf("declare -x %s\n", tab[idx++]);
+		shellzin_export_print_var(tab[idx++]);
+	export_print_shell_variable(shell);
 	free(tab);
 }
 
@@ -102,6 +103,8 @@ void	shellzin_export(char **argv, t_shellzin *shell)
 	{
 		if (!ft_strchr(argv[idx], '='))
 		{
+			if (shellzin_export_is_valid(argv[idx]) && !ft_isdigit(argv[idx][0]))
+				export_set_shell_variable(argv[idx], shell);
 			shellzin_export_is_error(argv, idx, shell);
 			continue ;
 		}
