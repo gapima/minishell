@@ -84,7 +84,10 @@ void	handle_heredoc(t_ast *ast, t_shellzin *shell, int _stdin)
 	char	*heredoc_name;
 
 	rnode = ast->u_node.redirect_node.right->u_node.list_node.list->content;
-	cmd_list = ast->u_node.redirect_node.left->u_node.list_node.list;
+	if (ast->u_node.redirect_node.left->kind == AstKind_List)
+		cmd_list = ast->u_node.redirect_node.left->u_node.list_node.list;
+	else
+		cmd_list = NULL; 
 	while (cmd_list)
 	{
 		content = &((t_ast *)cmd_list->content)->u_node.word_node.content;
@@ -108,12 +111,17 @@ void	shellzin_heredoc(t_ast *ast, t_shellzin *shell)
 {
 	if (!ast)
 		return ;
-	if (ast->kind == AstKind_Redirect \
-	&& ast->u_node.redirect_node.kind == TokenKind_DLArrow)
-		handle_heredoc(ast, shell, dup(STDIN_FILENO));
 	else if (ast->kind == AstKind_Pipe)
 	{
 		shellzin_heredoc(ast->u_node.pipe_node.left, shell);
 		shellzin_heredoc(ast->u_node.pipe_node.right, shell);
 	}
+	else if (ast->kind == AstKind_Redirect)
+	{
+		shellzin_heredoc(ast->u_node.redirect_node.left, shell);
+		shellzin_heredoc(ast->u_node.redirect_node.right, shell);
+	}
+	if (ast->kind == AstKind_Redirect \
+	&& ast->u_node.redirect_node.kind == TokenKind_DLArrow)
+		handle_heredoc(ast, shell, dup(STDIN_FILENO));
 }

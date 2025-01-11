@@ -34,7 +34,6 @@ void	shellzin_evaluate(char *line, t_shellzin *shell)
 	else if (ast)
 	{
 		shell->ast = ast;
-		shellzin_heredoc(ast, shell);
 		ast_evaluate(shell, ast);
 	}
 	parser_deinit(&shell->parser);

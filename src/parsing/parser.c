@@ -31,5 +31,6 @@ t_ast	*parse(char *line, t_shellzin *shell)
 	parser_batch_tokens(&shell->parser);
 	shell->stop_evaluation = false;
 	ast = parse_pipe(&shell->parser, shell);
+	shellzin_heredoc(ast, shell);
 	return (ast);
 }
